@@ -43,9 +43,9 @@ export function RatioImage({
     return (
       <div
         aria-hidden
-        className={`${ratio} flex items-center justify-center overflow-hidden bg-accent-soft text-accent-ink/50 ${className}`}
+        className={`${ratio} flex items-center justify-center overflow-hidden bg-accent-soft text-accent-ink/60 ${className}`}
         style={{
-          backgroundImage: "radial-gradient(rgba(124, 90, 46, 0.16) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(rgba(222, 192, 141, 0.18) 1px, transparent 1px)",
           backgroundSize: "14px 14px",
         }}
       >
@@ -74,7 +74,7 @@ export function GoldDot({ text, className = "" }: { text: string; className?: st
 
 export function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex max-w-full items-center truncate rounded-full border border-line bg-bg px-3 py-1 text-xs font-medium text-ink-soft">
+    <span className="glass-chip inline-flex max-w-full items-center truncate rounded-full px-3 py-1 text-xs font-medium text-ink-soft">
       {children}
     </span>
   );
@@ -101,7 +101,7 @@ export function SectionShell({
             {eyebrow}
           </p>
         </Rise>
-        <h2 className="mt-4 max-w-3xl text-3xl font-bold tracking-tight text-balance sm:text-4xl md:text-5xl">
+        <h2 className="font-display mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl md:text-5xl">
           <AnimatedHeading text={heading} />
         </h2>
         <div className="mt-10 md:mt-14">{children}</div>

@@ -23,7 +23,7 @@ function CopyEmail({ email }: { email: string }) {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-2 rounded-[14px] border border-line bg-bg px-4 py-3 text-sm font-medium text-ink transition-[border-color,transform] duration-200 hover:border-ink/30 active:scale-[0.98]"
+      className="glass-chip inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-ink transition-[filter,transform] duration-200 hover:brightness-125 active:scale-[0.98] sm:w-auto"
     >
       {copied ? (
         <Check className="h-4 w-4 text-success" strokeWidth={2} />
@@ -43,14 +43,14 @@ export function SiteFooter({ contact, name }: { contact: ContactInfo; name: stri
   return (
     <footer
       id="contact"
-      className="relative mt-16 scroll-mt-24 overflow-hidden border-t border-line bg-surface px-5 sm:px-6 lg:px-8 md:mt-24"
+      className="relative mt-16 scroll-mt-24 overflow-hidden border-t border-line px-5 sm:px-6 lg:px-8 md:mt-24"
     >
-      {/* Bookends the hero's ambient warmth. */}
+      {/* Bookends the hero's warmth: a brass glow pooling at the page's end. */}
       <div
         aria-hidden
-        className="ambient absolute -bottom-48 -left-40 h-[520px] w-[520px] rounded-full opacity-60"
+        className="ambient absolute -bottom-48 -left-40 h-[520px] w-[520px] rounded-full"
         style={{
-          background: "radial-gradient(circle, rgba(243,234,217,0.9) 0%, rgba(243,234,217,0) 65%)",
+          background: "radial-gradient(circle, rgba(201,162,106,0.16) 0%, transparent 65%)",
         }}
       />
       <div className="relative mx-auto max-w-6xl py-16 md:py-24">
@@ -60,16 +60,17 @@ export function SiteFooter({ contact, name }: { contact: ContactInfo; name: stri
             Contact
           </p>
         </Rise>
-        <h2 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
+        <h2 className="font-display mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
           {/* The only place the period speaks twice: it lands, then rings once. */}
           <AnimatedHeading text="Let's talk" ring />
         </h2>
         <Rise delay={0.25}>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          {/* Mobile gets stacked, full-width, thumb-height actions; from sm up they flow inline. */}
+          <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Magnetic>
               <a
                 href={`mailto:${contact.email}`}
-                className="inline-flex items-center gap-2 rounded-[14px] bg-ink px-5 py-3 text-sm font-medium text-white transition-[opacity,transform] duration-200 hover:opacity-85 active:scale-[0.98]"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-bg transition-[filter,transform] duration-200 hover:brightness-110 active:scale-[0.98] sm:w-auto"
               >
                 <Mail className="h-4 w-4" strokeWidth={2} />
                 {contact.email}
@@ -79,7 +80,7 @@ export function SiteFooter({ contact, name }: { contact: ContactInfo; name: stri
             {contact.phone && (
               <a
                 href={`tel:${contact.phone.replace(/\s/g, "")}`}
-                className="inline-flex items-center gap-2 rounded-[14px] border border-line bg-bg px-5 py-3 text-sm font-medium text-ink transition-[border-color,transform] duration-200 hover:border-ink/30 active:scale-[0.98]"
+                className="glass-chip inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-ink transition-[filter,transform] duration-200 hover:brightness-125 active:scale-[0.98] sm:w-auto"
               >
                 <Phone className="h-4 w-4" strokeWidth={2} />
                 {contact.phone}
@@ -90,7 +91,7 @@ export function SiteFooter({ contact, name }: { contact: ContactInfo; name: stri
                 href={contact.linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-[14px] border border-line bg-bg px-5 py-3 text-sm font-medium text-ink transition-[border-color,transform] duration-200 hover:border-ink/30 active:scale-[0.98]"
+                className="glass-chip inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-ink transition-[filter,transform] duration-200 hover:brightness-125 active:scale-[0.98] sm:w-auto"
               >
                 LinkedIn
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2} />
@@ -101,7 +102,7 @@ export function SiteFooter({ contact, name }: { contact: ContactInfo; name: stri
                 href={contact.resumeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-[14px] border border-line bg-bg px-5 py-3 text-sm font-medium text-ink transition-[border-color,transform] duration-200 hover:border-ink/30 active:scale-[0.98]"
+                className="glass-chip inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-ink transition-[filter,transform] duration-200 hover:brightness-125 active:scale-[0.98] sm:w-auto"
               >
                 Resume
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2} />

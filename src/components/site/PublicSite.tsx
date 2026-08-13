@@ -6,6 +6,7 @@ import { EducationSection } from "./EducationSection";
 import { ExperienceSection } from "./ExperienceSection";
 import { HeroSection } from "./HeroSection";
 import { CustomCursor } from "./motion/CustomCursor";
+import { GlassBackdrop } from "./motion/GlassBackdrop";
 import { MotionProvider } from "./motion/MotionProvider";
 import { ProjectsSection } from "./ProjectsSection";
 import { SiteFooter } from "./SiteFooter";
@@ -48,20 +49,24 @@ export function PublicSite({ content }: { content: SiteContent }) {
 
   return (
     <MotionProvider>
-      <div className="min-h-screen bg-bg text-ink">
+      <div className="theme-glass min-h-screen bg-bg text-ink">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[95] focus:rounded-[12px] focus:bg-ink focus:px-4 focus:py-2.5 focus:text-sm focus:font-medium focus:text-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[95] focus:rounded-[12px] focus:bg-ink focus:px-4 focus:py-2.5 focus:text-sm focus:font-medium focus:text-bg"
         >
           Skip to content
         </a>
         <CustomCursor />
-        <SiteNav content={content} />
-        <main id="main">
-          <HeroSection hero={content.hero} contact={content.contact} workAnchor={workAnchor} />
-          {sections.map(renderSection)}
-        </main>
-        <SiteFooter contact={content.contact} name={content.hero.name} />
+        <GlassBackdrop />
+        {/* Content sits above the fixed light scene so backdrop blur can sample it. */}
+        <div className="relative z-10">
+          <SiteNav content={content} />
+          <main id="main">
+            <HeroSection hero={content.hero} contact={content.contact} workAnchor={workAnchor} />
+            {sections.map(renderSection)}
+          </main>
+          <SiteFooter contact={content.contact} name={content.hero.name} />
+        </div>
         {/* Without JS, motion never hydrates — force any inline hidden states visible. */}
         <noscript>
           <style>{`[style]{opacity:1!important;transform:none!important;filter:none!important}`}</style>

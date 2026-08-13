@@ -44,7 +44,7 @@ export function ToolsSection({ items }: { items: ToolItem[] }) {
           return (
             <motion.div
               key={tool.id}
-              className="card flex items-center gap-3.5 !rounded-2xl !p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-ink/15"
+              className="glass-lite flex items-center gap-3.5 p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:!border-[rgb(243_233_216_/_0.26)]"
               initial={{ opacity: 0, y: 14, scale: 0.96 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, margin: "0px 0px -40px 0px" }}

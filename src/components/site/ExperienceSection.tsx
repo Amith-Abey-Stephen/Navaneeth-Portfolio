@@ -33,7 +33,7 @@ function TimelineCard({ item }: { item: ExperienceItem }) {
     <div className="relative">
       <TimelineNode />
       <Rise>
-        <article className="card group p-6 transition-colors duration-200 hover:border-ink/15 md:p-8">
+        <article className="glass group p-6 transition-colors duration-200 hover:!border-[rgb(243_233_216_/_0.28)] md:p-8">
           <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
             <div className="flex min-w-0 items-center gap-4">
               <RatioImage
@@ -48,7 +48,7 @@ function TimelineCard({ item }: { item: ExperienceItem }) {
               </div>
             </div>
             <motion.span
-              className="utility rounded-full bg-bg px-3 py-1.5 whitespace-nowrap"
+              className="utility glass-chip rounded-full px-3 py-1.5 whitespace-nowrap"
               initial={{ opacity: 0, x: 8 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "0px 0px -60px 0px" }}
@@ -62,7 +62,7 @@ function TimelineCard({ item }: { item: ExperienceItem }) {
               The visible panel observes; the zero-scale rule only follows variants. */}
           {item.highlight && (
             <motion.div
-              className="relative mt-6 overflow-hidden rounded-2xl bg-accent-soft/60 px-5 py-4"
+              className="relative mt-6 overflow-hidden rounded-2xl bg-accent-soft px-5 py-4"
               initial="hide"
               whileInView="show"
               viewport={{ once: true, margin: "0px 0px -60px 0px" }}

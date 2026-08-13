@@ -10,7 +10,7 @@ function CertificationCard({ item, index }: { item: CertificationItem; index: nu
   const delay = index * 0.09;
   return (
     <Rise delay={delay}>
-      <article className="card group flex h-full flex-col p-6 transition-colors duration-200 hover:border-ink/15">
+      <article className="glass-lite group flex h-full flex-col p-6 transition-colors duration-200 hover:!border-[rgb(243_233_216_/_0.26)]">
         <div className="flex items-start gap-4">
           {/* The seal stamps in: scale settles from above-size, like a press. */}
           <motion.div
@@ -18,7 +18,7 @@ function CertificationCard({ item, index }: { item: CertificationItem; index: nu
             whileInView={{ scale: 1, opacity: 1 }}
             viewport={{ once: true, margin: "0px 0px -40px 0px" }}
             transition={{ duration: 0.35, ease: EASE, delay: delay + 0.15 }}
-            className="shrink-0 rounded-xl transition-shadow duration-300 group-hover:shadow-[0_0_0_2px_rgba(185,133,76,0.35)]"
+            className="shrink-0 rounded-xl transition-shadow duration-300 group-hover:shadow-[0_0_0_2px_rgba(201,162,106,0.4)]"
           >
             {item.badge?.url ? (
               <RatioImage image={item.badge} alt="" className="h-12 w-12 rounded-xl border border-line" />

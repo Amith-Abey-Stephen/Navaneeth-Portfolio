@@ -80,21 +80,29 @@ export function ParallaxPortrait({ name, photoUrl }: { name: string; photoUrl: s
       </motion.div>
       <motion.div
         aria-hidden
-        className="absolute inset-0 translate-x-3 translate-y-3 rounded-full bg-accent-soft"
-        style={ok ? { x: discX, y: discCombinedY } : undefined}
+        className="absolute inset-0 translate-x-4 translate-y-4 rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(201, 162, 106, 0.3) 0%, transparent 70%)",
+          ...(ok ? { x: discX, y: discCombinedY } : undefined),
+        }}
       />
       <motion.div
-        className="relative aspect-square overflow-hidden rounded-full border border-line bg-surface shadow-card"
+        className="relative aspect-square overflow-hidden rounded-full border border-[rgba(243,233,216,0.22)] bg-surface shadow-[inset_0_1px_0_rgba(255,251,242,0.25),0_20px_50px_rgba(0,0,0,0.45)]"
         style={interactive ? { x: photoX, y: photoY } : undefined}
       >
         {photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={photoUrl} alt={name} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-accent-ink/40 select-none">
+          <div className="font-display flex h-full w-full items-center justify-center text-5xl font-semibold text-accent-ink/40 select-none">
             {initials}
           </div>
         )}
+        {/* Rim light above the photo — the glass edge catching the scene's light. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_0_1px_0_rgba(255,251,242,0.25),inset_0_0_24px_rgba(0,0,0,0.2)]"
+        />
       </motion.div>
     </div>
   );

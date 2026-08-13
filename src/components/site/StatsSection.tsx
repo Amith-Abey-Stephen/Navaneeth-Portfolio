@@ -21,18 +21,18 @@ export function StatsSection({ items }: { items: StatItem[] }) {
     <section id="stats" className="scroll-mt-24 px-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl py-6">
         <Rise>
-          <div className="card overflow-hidden !p-0">
-            <div className={`grid grid-cols-2 gap-px bg-line ${cols}`}>
+          <div className="glass overflow-hidden">
+            <div className={`grid grid-cols-2 ${cols}`}>
               {items.map((item, i) => (
                 <Rise
                   key={item.id}
                   delay={0.08 * i}
                   y={10}
-                  className="flex flex-col items-center justify-center gap-1.5 bg-surface px-4 py-8 text-center"
+                  className="flex flex-col items-center justify-center gap-1.5 px-4 py-8 text-center"
                 >
                   <div className="flex h-10 items-center justify-center">
                     {item.value ? (
-                      <span className="text-3xl font-bold tracking-tight md:text-4xl">
+                      <span className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
                         <CountValue value={item.value} />
                       </span>
                     ) : item.icon?.url ? (
