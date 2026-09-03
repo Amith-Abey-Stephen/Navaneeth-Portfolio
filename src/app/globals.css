@@ -15,6 +15,9 @@
   --color-danger: #ef4444;
 
   --font-sans: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  --font-body: var(--font-schibsted), system-ui, -apple-system, sans-serif;
+  --font-utility: var(--font-spline-mono), ui-monospace, "SF Mono", monospace;
 
   --radius-card: 24px;
   --radius-input: 12px;
@@ -60,9 +63,124 @@ body {
   }
 }
 
+/* ————————————————————————————————————————————————————————————————
+   Liquid glass theme — scoped to the public site (PublicSite /
+   CaseStudyView roots carry .theme-glass). The studio keeps the
+   global light tokens above untouched; the section components pick
+   these values up automatically because every Tailwind color utility
+   resolves its var() at point of use.
+   ———————————————————————————————————————————————————————————————— */
+.theme-glass {
+  /* Named tokens: espresso graphite / warm porcelain / smoked taupe /
+     antique brass / burnished brass / candlelight tint. */
+  --color-bg: #15120e;
+  --color-surface: #201b15;
+  --color-ink: #f2ece2;
+  --color-ink-soft: #d8d0c2;
+  --color-muted: #a89e8f;
+  --color-line: rgba(243, 233, 216, 0.14);
+  --color-accent: #c9a26a;
+  --color-accent-soft: rgba(201, 162, 106, 0.13);
+  --color-accent-ink: #dec08d;
+  --glass-tint: 243 233 216;
+  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 24px 64px rgba(0, 0, 0, 0.5);
+
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+.theme-glass ::selection {
+  background: rgba(201, 162, 106, 0.35);
+  color: #f6f1e7;
+}
+
+.theme-glass :focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* ——— The material ———
+   True glass: laminate tint over a dark scrim (the scrim guarantees text
+   contrast no matter what the backdrop is doing), backdrop blur+saturate
+   so the material genuinely refracts the light layer behind it, an inner
+   top rim that catches light, and ambient depth below. */
+@utility glass {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgb(var(--glass-tint) / 0.09), rgb(var(--glass-tint) / 0.03)),
+    rgba(21, 18, 14, 0.38);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(243, 233, 216, 0.14);
+  border-radius: 28px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 251, 242, 0.12),
+    inset 0 0 0 0.5px rgba(255, 251, 242, 0.05),
+    0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+/* Non-blurred laminate for dense grids (tools, skills, cert cards) — the
+   blur budget stays with the few large panels; these still read as glass
+   because the moving light bleeds through the translucent fill. */
+@utility glass-lite {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgb(var(--glass-tint) / 0.07), rgb(var(--glass-tint) / 0.02)),
+    rgba(21, 18, 14, 0.5);
+  border: 1px solid rgba(243, 233, 216, 0.12);
+  border-radius: 20px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 251, 242, 0.09),
+    0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Chip-scale glass for pills, tags, and small controls. */
+@utility glass-chip {
+  background: rgb(var(--glass-tint) / 0.07);
+  border: 1px solid rgba(243, 233, 216, 0.13);
+  box-shadow: inset 0 1px 0 rgba(255, 251, 242, 0.08);
+}
+
+/* Continuous (squircle) corners where the platform has them — a quiet part
+   of what makes the material read considered rather than default. */
+@supports (corner-shape: squircle) {
+  .glass,
+  .glass-lite {
+    corner-shape: squircle;
+  }
+}
+
+/* ——— The backdrop scene ———
+   Painted by GlassBackdrop: base canvas, warm blooms drifting slowly,
+   the living light (cursor on desktop / scroll on mobile), fine grain,
+   and an edge vignette that grounds the composition. */
+.gl-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--color-bg);
+}
+.gl-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+.gl-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 100% at 50% 20%, transparent 55%, rgba(0, 0, 0, 0.45));
+}
+
 /* Motion — one physics system: cubic-bezier(0.2,0.6,0.2,1), transform+opacity
    only, no bounce. Hero choreography is CSS-first (plays without JS, instant
-   under reduced motion via the global override below). */
+   under reduced motion via the global override above). */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes rise-in {
     from {
@@ -125,6 +243,65 @@ body {
   .ambient {
     animation: ambient-drift 60s ease-in-out infinite;
   }
+
+  /* The signature's opening beat: one light sweep across the hero pane as
+     the material introduces itself. Desktop composition only — the mobile
+     and tablet hero deliberately has no pane and a simpler choreography. */
+  @media (min-width: 1024px) {
+    @keyframes glass-sweep {
+      from {
+        transform: translateX(-140%) skewX(-14deg);
+      }
+      to {
+        transform: translateX(320%) skewX(-14deg);
+      }
+    }
+    .glass-sweep::after {
+      content: "";
+      position: absolute;
+      top: -1px;
+      bottom: -1px;
+      left: 0;
+      width: 42%;
+      pointer-events: none;
+      background: linear-gradient(
+        100deg,
+        transparent,
+        rgba(255, 251, 242, 0.05) 40%,
+        rgba(255, 251, 242, 0.14) 50%,
+        rgba(255, 251, 242, 0.05) 60%,
+        transparent
+      );
+      animation: glass-sweep 1.5s cubic-bezier(0.2, 0.6, 0.2, 1) 0.6s both;
+    }
+  }
+}
+
+/* The hero pane: on desktop it is the site's largest glass surface; on
+   mobile and tablet the hero sits directly on the canvas (its own
+   composition, not a compressed pane), so below lg this class paints
+   nothing. */
+@media (min-width: 1024px) {
+  .hero-pane {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgb(var(--glass-tint) / 0.09), rgb(var(--glass-tint) / 0.03)),
+      rgba(21, 18, 14, 0.38);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(243, 233, 216, 0.14);
+    border-radius: 36px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 251, 242, 0.12),
+      0 24px 64px rgba(0, 0, 0, 0.4);
+    padding: 3.5rem;
+  }
+  @supports (corner-shape: squircle) {
+    .hero-pane {
+      corner-shape: squircle;
+    }
+  }
 }
 
 /* Lenis smooth scroll */
@@ -153,13 +330,19 @@ html.lenis body {
   }
 }
 
-/* Utility face — captions, labels, dates */
+/* Utility face — captions, labels, dates. The glass theme swaps it onto the
+   mono utility face; the studio keeps the original treatment. */
 .utility {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-muted);
+}
+.theme-glass .utility {
+  font-family: var(--font-utility);
+  font-weight: 500;
+  letter-spacing: 0.14em;
 }
 
 .card {

@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { CustomCursor } from "./motion/CustomCursor";
+import { GlassBackdrop } from "./motion/GlassBackdrop";
 import { MotionProvider, useMotionCtx } from "./motion/MotionProvider";
 import { AnimatedHeading, CountValue, EASE, Rise } from "./motion/primitives";
 import { SiteFooter } from "./SiteFooter";
@@ -13,9 +14,9 @@ import { GoldDot, RatioImage } from "./shared";
 function CaseStudyNav({ name }: { name: string }) {
   const firstName = name.trim().split(/\s+/)[0] || "Portfolio";
   return (
-    <header className="sticky top-0 z-40 border-b border-line/70 bg-bg/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-6 lg:px-8">
-        <a href="/" className="text-lg font-bold tracking-tight">
+    <header className="sticky top-3 z-40 px-3 sm:top-5 sm:px-6">
+      <div className="glass mx-auto flex h-14 max-w-5xl items-center justify-between !rounded-full px-5 sm:px-7">
+        <a href="/" className="font-display text-lg font-semibold tracking-tight">
           <GoldDot text={firstName} />
         </a>
         <a
@@ -71,7 +72,7 @@ function BlockScene({ block, index }: { block: CaseStudyBlock; index: number }) 
         </p>
       </Rise>
       {block.heading && (
-        <h2 className="mt-3 text-2xl font-bold tracking-tight text-balance md:text-3xl">
+        <h2 className="font-display mt-3 text-2xl font-semibold tracking-tight text-balance md:text-3xl">
           <AnimatedHeading text={block.heading} />
         </h2>
       )}
@@ -85,25 +86,23 @@ function BlockScene({ block, index }: { block: CaseStudyBlock; index: number }) 
 
       {block.metrics && block.metrics.length > 0 && (
         <Rise delay={0.1} className="mt-7">
-          <div className="card overflow-hidden !p-0">
-            <div
-              className={`grid gap-px bg-line ${
-                block.metrics.length === 1
-                  ? "grid-cols-1"
-                  : block.metrics.length === 3
-                    ? "grid-cols-1 sm:grid-cols-3"
-                    : "grid-cols-2"
-              }`}
-            >
-              {block.metrics.map((m) => (
-                <div key={m.id} className="flex flex-col gap-1 bg-surface px-6 py-6">
-                  <span className="text-2xl font-bold tracking-tight md:text-3xl">
-                    <CountValue value={m.value} />
-                  </span>
-                  <span className="text-sm font-medium text-muted">{m.label}</span>
-                </div>
-              ))}
-            </div>
+          <div
+            className={`grid gap-4 ${
+              block.metrics.length === 1
+                ? "grid-cols-1"
+                : block.metrics.length === 3
+                  ? "grid-cols-1 sm:grid-cols-3"
+                  : "grid-cols-2"
+            }`}
+          >
+            {block.metrics.map((m) => (
+              <div key={m.id} className="glass-lite flex flex-col gap-1 px-6 py-6">
+                <span className="font-display text-2xl font-semibold tracking-tight md:text-3xl">
+                  <CountValue value={m.value} />
+                </span>
+                <span className="text-sm font-medium text-muted">{m.label}</span>
+              </div>
+            ))}
           </div>
         </Rise>
       )}
@@ -136,7 +135,7 @@ function StageRail({ blocks, activeId }: { blocks: CaseStudyBlock[]; activeId: s
               href={`#cs-${b.id}`}
               aria-current={active ? "true" : undefined}
               className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-                active ? "bg-accent-soft/60 text-ink" : "text-muted hover:text-ink"
+                active ? "bg-accent-soft text-ink" : "text-muted hover:text-ink"
               }`}
             >
               <span
@@ -179,18 +178,21 @@ export function CaseStudyView({ project, content }: { project: ProjectItem; cont
 
   return (
     <MotionProvider>
-      <div className="min-h-screen bg-bg text-ink">
+      <div className="theme-glass min-h-screen bg-bg text-ink">
         <CustomCursor />
+        <GlassBackdrop />
+        {/* Content sits above the fixed light scene so backdrop blur can sample it. */}
+        <div className="relative z-10">
         <CaseStudyNav name={content.hero.name} />
         <main className="px-5 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl pt-14 md:pt-20">
             <div className="rise-in flex flex-wrap items-center gap-3">
-              <span className="inline-flex rounded-full bg-accent-soft px-3.5 py-1.5">
+              <span className="glass-chip inline-flex rounded-full px-3.5 py-1.5">
                 <span className="utility !text-accent-ink">{project.vertical}</span>
               </span>
               <span className="utility">Case study</span>
             </div>
-            <h1 className="mt-5 max-w-4xl text-4xl font-bold tracking-[-0.02em] text-balance sm:text-5xl md:text-6xl">
+            <h1 className="font-display mt-5 max-w-4xl text-4xl font-semibold tracking-[-0.01em] text-balance sm:text-5xl md:text-6xl">
               <AnimatedHeading text={project.title} />
             </h1>
             <Rise delay={0.2}>
@@ -204,7 +206,7 @@ export function CaseStudyView({ project, content }: { project: ProjectItem; cont
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group mt-7 inline-flex items-center gap-2 rounded-[14px] border border-line bg-surface px-5 py-3 text-sm font-medium transition-[border-color,transform] duration-200 hover:border-ink/30 active:scale-[0.98]"
+                  className="glass-chip group mt-7 inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium transition-[filter,transform] duration-200 hover:brightness-125 active:scale-[0.98]"
                 >
                   View live product
                   <ArrowUpRight
@@ -228,6 +230,7 @@ export function CaseStudyView({ project, content }: { project: ProjectItem; cont
           </div>
         </main>
         <SiteFooter contact={content.contact} name={content.hero.name} />
+        </div>
         <noscript>
           <style>{`[style]{opacity:1!important;transform:none!important;filter:none!important}`}</style>
         </noscript>

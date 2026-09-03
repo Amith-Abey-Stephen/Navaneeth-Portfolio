@@ -3,10 +3,15 @@ import { ArrowRight, Download } from "lucide-react";
 import { ParallaxPortrait } from "./HeroPortrait";
 
 /**
- * The opening title. The text choreography is pure CSS (SSR-first: it plays
- * before hydration and without JS): pills cascade → name rises word by word →
- * the gold period lands → bio and CTAs follow. The portrait's depth response
- * is a client enhancement.
+ * The opening title. Desktop and mobile are two compositions, not one scaled:
+ * on md+ the copy lives inside the site's largest glass pane (.hero-pane) and
+ * the signature light sweep crosses it on load, with the parallax portrait
+ * layered beside it; below md there is no pane — a small glass medallion,
+ * the name straight on the canvas, and full-width thumb-reach CTAs.
+ *
+ * The text choreography is pure CSS (SSR-first: it plays before hydration and
+ * without JS): chips cascade → name rises word by word → the brass period
+ * lands → bio and CTAs follow.
  */
 export function HeroSection({
   hero,
@@ -27,33 +32,44 @@ export function HeroSection({
   const wordStep = 0.09;
   const dotDelay = wordBase + words.length * wordStep + 0.12;
 
+  const initials = hero.name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w.charAt(0))
+    .join("");
+
   return (
-    <section id="top" className="relative overflow-hidden px-5 sm:px-6 lg:px-8">
-      {/* Ambient warmth behind the portrait side — the footer bookends this. */}
-      <div
-        aria-hidden
-        className="ambient absolute -top-32 -right-40 h-[540px] w-[540px] rounded-full opacity-50"
-        style={{
-          background: "radial-gradient(circle, rgba(243,234,217,0.9) 0%, rgba(243,234,217,0) 65%)",
-        }}
-      />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 py-16 md:grid-cols-[1.2fr_1fr] md:py-28">
-        <div className="min-w-0">
+    <section id="top" className="relative px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto grid max-w-6xl items-center gap-12 py-14 md:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:py-28">
+        <div className="hero-pane glass-sweep min-w-0">
+          {/* Sub-lg medallion — its own composition, not the desktop portrait shrunk. */}
+          <div className="rise-in mb-7 lg:hidden">
+            <div className="glass-chip flex h-20 w-20 items-center justify-center overflow-hidden rounded-full">
+              {hero.photo.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={hero.photo.url} alt={hero.name} className="h-full w-full object-cover" />
+              ) : (
+                <span className="font-display text-2xl font-semibold text-accent-ink/70 select-none">
+                  {initials}
+                </span>
+              )}
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-2">
             {roles.map((role, i) => (
               <span
                 key={i}
-                className="rise-in inline-flex max-w-full rounded-full bg-accent-soft px-3.5 py-1.5"
+                className="glass-chip rise-in inline-flex max-w-full rounded-full px-3.5 py-1.5"
                 style={{ animationDelay: `${i * 70}ms` }}
               >
-                <span className="utility min-w-0 truncate !text-accent-ink whitespace-nowrap">
-                  {role}
-                </span>
+                <span className="utility min-w-0 truncate whitespace-nowrap">{role}</span>
               </span>
             ))}
           </div>
           <h1
-            className="mt-6 text-5xl font-bold tracking-[-0.03em] text-balance sm:text-6xl md:text-7xl"
+            className="font-display mt-6 text-5xl font-semibold tracking-[-0.01em] text-balance sm:text-6xl lg:text-7xl"
             aria-label={`${words.join(" ")}.`}
           >
             {words.map((w, i) => (
@@ -83,7 +99,7 @@ export function HeroSection({
             {workAnchor && (
               <a
                 href={workAnchor}
-                className="group inline-flex items-center gap-2 rounded-[14px] bg-ink px-5 py-3 text-sm font-medium text-white transition-[opacity,transform] duration-200 hover:opacity-85 active:scale-[0.98]"
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-bg transition-[filter,transform] duration-200 hover:brightness-110 active:scale-[0.98] sm:w-auto"
               >
                 View my work
                 <ArrowRight
@@ -97,7 +113,7 @@ export function HeroSection({
                 href={contact.resumeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 rounded-[14px] border border-line bg-surface px-5 py-3 text-sm font-medium text-ink transition-[border-color,transform] duration-200 hover:border-ink/30 active:scale-[0.98]"
+                className="glass-chip group inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-medium text-ink transition-[filter,transform] duration-200 hover:brightness-125 active:scale-[0.98] sm:w-auto"
               >
                 Download resume
                 <Download
@@ -109,7 +125,10 @@ export function HeroSection({
           </div>
         </div>
 
-        <ParallaxPortrait name={hero.name} photoUrl={hero.photo.url} />
+        {/* Desktop-only portrait, layered over the pane's edge for real depth. */}
+        <div className="hidden lg:block lg:-ml-6">
+          <ParallaxPortrait name={hero.name} photoUrl={hero.photo.url} />
+        </div>
       </div>
     </section>
   );

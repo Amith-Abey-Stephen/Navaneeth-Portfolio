@@ -37,7 +37,12 @@ function ScrubParagraph({ text }: { text: string }) {
           <span
             key={i}
             className="transition-colors duration-150"
-            style={{ color: !ok || i < litCount ? "var(--color-ink)" : "rgba(11, 13, 16, 0.22)" }}
+            style={{
+              color:
+                !ok || i < litCount
+                  ? "var(--color-ink)"
+                  : "color-mix(in srgb, var(--color-ink) 24%, transparent)",
+            }}
           >
             {w}
             {i < words.length - 1 ? " " : ""}

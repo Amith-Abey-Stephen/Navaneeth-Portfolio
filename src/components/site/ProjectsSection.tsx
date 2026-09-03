@@ -76,7 +76,7 @@ function TiltCard({ children, className = "" }: { children: React.ReactNode; cla
       onPointerMove={onMove}
       onPointerLeave={onLeave}
       style={interactive ? { rotateX: rx, rotateY: ry, transformPerspective: 900 } : undefined}
-      className={`card group relative flex flex-col overflow-hidden !p-0 transition-[border-color,box-shadow] duration-200 hover:border-ink/15 hover:shadow-pop ${className}`}
+      className={`glass group relative flex flex-col overflow-hidden transition-[border-color,box-shadow] duration-200 hover:!border-[rgb(243_233_216_/_0.28)] hover:shadow-pop ${className}`}
     >
       {children}
       {interactive && (
@@ -85,7 +85,7 @@ function TiltCard({ children, className = "" }: { children: React.ReactNode; cla
           className="pointer-events-none absolute inset-0 transition-opacity duration-300"
           style={{
             opacity: spot.on ? 1 : 0,
-            background: `radial-gradient(320px circle at ${spot.x}% ${spot.y}%, rgba(185, 133, 76, 0.08), transparent 65%)`,
+            background: `radial-gradient(320px circle at ${spot.x}% ${spot.y}%, rgba(222, 192, 141, 0.1), transparent 65%)`,
           }}
         />
       )}
@@ -204,10 +204,16 @@ export function ProjectsSection({ items }: { items: ProjectItem[] }) {
                 </TiltCard>
               </Rise>
             ) : (
-              <div className="mt-6 grid gap-6 md:grid-cols-2">
+              // Touch-native below md: a snap carousel you thumb through, not a
+              // stacked grid. From md up it becomes the two-column tilt grid.
+              <div className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:px-0 md:pb-0">
                 {group.items.map((item, i) => (
-                  <Rise key={item.id} delay={0.08 * i}>
-                    <TiltCard>
+                  <Rise
+                    key={item.id}
+                    delay={0.08 * i}
+                    className="w-[86%] shrink-0 snap-center md:w-auto md:shrink"
+                  >
+                    <TiltCard className="h-full">
                       <ProjectCover image={item.coverImage} title={item.title} className="border-b" />
                       <ProjectBody item={item} />
                     </TiltCard>

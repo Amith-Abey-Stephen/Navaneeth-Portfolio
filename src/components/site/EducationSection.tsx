@@ -10,7 +10,7 @@ import { SectionShell } from "./shared";
 export function EducationSection({ items }: { items: EducationItem[] }) {
   return (
     <SectionShell id="education" eyebrow="Education" heading="Where I studied">
-      <div className="card !p-0">
+      <div className="glass overflow-hidden">
         {items.map((item, i) => (
           <motion.div
             key={item.id}

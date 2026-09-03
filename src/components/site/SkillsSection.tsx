@@ -15,7 +15,7 @@ export function SkillsSection({ items }: { items: SkillGroup[] }) {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {groups.map((group, col) => (
           <Rise key={group.id} delay={col * 0.08}>
-            <div className="card group h-full p-6 transition-colors duration-200 hover:border-ink/15 md:p-7">
+            <div className="glass-lite group h-full p-6 transition-colors duration-200 hover:!border-[rgb(243_233_216_/_0.26)] md:p-7">
               <h3 className="flex items-center gap-2 font-semibold tracking-tight break-words">
                 <span
                   aria-hidden
@@ -34,7 +34,7 @@ export function SkillsSection({ items }: { items: SkillGroup[] }) {
                 {group.skills.map((s, i) => (
                   <motion.span
                     key={i}
-                    className="inline-flex max-w-full items-center truncate rounded-full border border-line bg-bg px-3 py-1 text-xs font-medium text-ink-soft"
+                    className="glass-chip inline-flex max-w-full items-center truncate rounded-full px-3 py-1 text-xs font-medium text-ink-soft"
                     variants={{
                       hide: { opacity: 0, scale: 0.85 },
                       show: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: EASE } },
