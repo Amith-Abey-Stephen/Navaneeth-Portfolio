@@ -13,7 +13,7 @@ import { services, stats } from "@/data/content";
 import { GridLines, ScrollReveal, TextReveal } from "./ui";
 
 /* ---------- count-up number, like the recording (3+ → 20+, etc.) ---------- */
-function CountUp({
+export function CountUp({
   end,
   suffix = "+",
   duration = 1.8,
@@ -45,7 +45,7 @@ function CountUp({
 }
 
 /* ---------- scroll-drawn aurora line (gradient path draws on scroll) ---------- */
-function JourneyLine({ target }: { target: React.RefObject<HTMLElement | null> }) {
+export function JourneyLine({ target }: { target: React.RefObject<HTMLElement | null> }) {
   const { scrollYProgress } = useScroll({
     target: target as never,
     offset: ["start center", "end center"],

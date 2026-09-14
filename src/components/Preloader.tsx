@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
  * Matches the dark premium feel + gives hero images/fonts a
  * moment to settle before the entrance animations run.
  */
-export function Preloader() {
+export function Preloader({ name, subtitle }: { name: string; subtitle: string }) {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
 
@@ -54,9 +54,9 @@ export function Preloader() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="px-4 text-center font-heading text-[13px] font-medium tracking-[0.3em] text-white/60 sm:text-[15px]"
+            className="px-4 text-center font-heading text-[13px] font-medium uppercase tracking-[0.3em] text-white/60 sm:text-[15px]"
           >
-            ROHIT ANAND
+            {name}
           </motion.p>
           <p className="mt-4 font-heading text-[clamp(56px,18vw,72px)] font-bold leading-none tabular-nums text-white md:text-[96px]">
             {progress}
@@ -68,8 +68,8 @@ export function Preloader() {
               style={{ transform: `scaleX(${progress / 100})` }}
             />
           </div>
-          <p className="mt-5 font-heading text-[13px] tracking-[0.2em] text-white/40">
-            BRAND & PRODUCT DESIGNER
+          <p className="mt-5 max-w-[80vw] truncate px-4 text-center font-heading text-[13px] uppercase tracking-[0.2em] text-white/40">
+            {subtitle}
           </p>
         </motion.div>
       )}

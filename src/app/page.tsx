@@ -1,35 +1,41 @@
-import { Navbar } from "@/components/Navbar";
-import { Hero } from "@/components/Hero";
-import { AboutIntro } from "@/components/AboutIntro";
-import { Projects } from "@/components/Projects";
-import { Journey } from "@/components/Journey";
-import { Gallery } from "@/components/Gallery";
-import { Quote, About } from "@/components/About";
-import { Testimonials } from "@/components/Testimonials";
-import { Faq } from "@/components/Faq";
-import { Contact } from "@/components/Contact";
-import { Footer } from "@/components/Footer";
-import { SiteCanvas } from "@/components/SiteCanvas";
+import type { Metadata } from "next";
+import { PublicSite } from "@/components/site/PublicSite";
+import { getPublishedSite } from "@/lib/published";
 
-export default function HomePage() {
+// Rendered on every request so a publish shows up immediately.
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { content } = await getPublishedSite();
+  const title = `${content.hero.name} — ${content.hero.tagline}`;
+  return {
+    title,
+    description: content.hero.shortBio,
+    openGraph: { title, description: content.hero.shortBio, type: "profile" },
+    twitter: { card: "summary", title, description: content.hero.shortBio },
+  };
+}
+
+export default async function HomePage() {
+  const { content } = await getPublishedSite();
+
+  const personJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: content.hero.name,
+    jobTitle: content.hero.tagline,
+    description: content.hero.shortBio,
+    email: `mailto:${content.contact.email}`,
+    ...(content.contact.linkedinUrl ? { sameAs: [content.contact.linkedinUrl] } : {}),
+  };
+
   return (
-    <main className="relative min-h-screen bg-[#070708] text-white">
-      {/* single continuous background canvas — all sections sit transparent over it */}
-      <SiteCanvas />
-      <div className="relative">
-        <Navbar />
-        <Hero />
-        <AboutIntro />
-        <Projects />
-        <Journey />
-        <Gallery />
-        <Quote />
-        <About />
-        <Testimonials />
-        <Faq />
-        <Contact />
-        <Footer />
-      </div>
-    </main>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+      />
+      <PublicSite content={content} />
+    </>
   );
 }

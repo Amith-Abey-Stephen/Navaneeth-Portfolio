@@ -3,15 +3,22 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
+  Award,
+  BarChart3,
+  BookOpen,
   Briefcase,
+  GraduationCap,
   Link2,
   Menu,
   User,
   FileText,
+  Wrench,
   X,
   Zap,
 } from "lucide-react";
-import { navLinks, site } from "@/data/content";
+
+export type NavLink = { id: string; href: string; label: string };
+export type NavCta = { href: string; label: string; external?: boolean };
 
 const icons: Record<string, typeof User> = {
   hero: User,
@@ -19,14 +26,27 @@ const icons: Record<string, typeof User> = {
   skills: Zap,
   experience: FileText,
   contact: Link2,
+  about: BookOpen,
+  stats: BarChart3,
+  tools: Wrench,
+  certifications: Award,
+  education: GraduationCap,
 };
 
-export function Navbar() {
+export function Navbar({
+  links,
+  brand,
+  cta,
+}: {
+  links: NavLink[];
+  brand: string;
+  cta: NavCta | null;
+}) {
   const [active, setActive] = useState("hero");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const sections = navLinks
+    const sections = links
       .map((l) => document.getElementById(l.id))
       .filter(Boolean) as HTMLElement[];
     const obs = new IntersectionObserver(
@@ -39,7 +59,7 @@ export function Navbar() {
     );
     sections.forEach((s) => obs.observe(s));
     return () => obs.disconnect();
-  }, []);
+  }, [links]);
 
   // Intuitive mobile menu: close on Escape, on resize to desktop,
   // and lock background scroll while open.
@@ -60,7 +80,10 @@ export function Navbar() {
       window.removeEventListener("resize", onResize);
       document.body.style.overflow = prev;
     };
-  }, [open ]);
+  }, [open]);
+
+  const ctaRel = cta?.external ? "noreferrer" : undefined;
+  const ctaTarget = cta?.external ? "_blank" : undefined;
 
   return (
     <>
@@ -71,13 +94,14 @@ export function Navbar() {
         className="fixed inset-x-0 top-3 z-[80] flex justify-center px-3 md:top-5"
       >
         <nav
+          aria-label="Primary"
           // Matched to reference screenshot: warm translucent glass,
           // constant opacity (no scroll darkening), heavy blur + saturation
           // so the hero shows through like in the design.
           className="flex w-full max-w-[1060px] items-center justify-between gap-2 rounded-full border border-white/[0.08] bg-[rgb(22_11_9/0.44)] py-[7px] pl-[7px] pr-[7px] shadow-[0_12px_40px_-12px_rgba(0,0,0,0.55)] backdrop-blur-[18px] backdrop-saturate-[1.4]"
         >
           <div className="hidden flex-1 items-center justify-center gap-1 lg:gap-2 md:flex">
-            {navLinks.map((l) => {
+            {links.map((l) => {
               const Icon = icons[l.id] ?? User;
               const isActive = active === l.id;
               return (
@@ -101,20 +125,22 @@ export function Navbar() {
           {/* mobile brand */}
           <a
             href="#hero"
-            className="flex items-center gap-2 rounded-full px-4 py-2 text-[15px] font-semibold md:hidden"
+            className="flex min-w-0 items-center gap-2 rounded-full px-4 py-2 text-[15px] font-semibold md:hidden"
           >
-            <User size={17} /> Rohit
+            <User size={17} aria-hidden /> <span className="truncate">{brand}</span>
           </a>
 
           <div className="flex items-center gap-2">
-            <a
-              href={site.resumeHref}
-              target="_blank"
-              rel="noreferrer"
-              className="hidden rounded-full bg-[#f2eee7] px-5 py-3 text-[14px] font-semibold text-black transition-transform duration-300 hover:scale-[1.03] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:block lg:px-7 lg:text-[15px]"
-            >
-              Download Resume
-            </a>
+            {cta && (
+              <a
+                href={cta.href}
+                target={ctaTarget}
+                rel={ctaRel}
+                className="hidden whitespace-nowrap rounded-full bg-[#f2eee7] px-5 py-3 text-[14px] font-semibold text-black transition-transform duration-300 hover:scale-[1.03] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:block lg:px-7 lg:text-[15px]"
+              >
+                {cta.label}
+              </a>
+            )}
             <button
               onClick={() => setOpen(!open)}
               aria-label={open ? "Close menu" : "Open menu"}
@@ -152,7 +178,7 @@ export function Navbar() {
             exit={{ opacity: 0, y: -12 }}
             className="fixed inset-x-3 top-[68px] z-[79] max-h-[calc(100svh-88px)] overflow-y-auto rounded-3xl border border-white/[0.08] bg-[rgb(22_11_9/0.92)] p-3 shadow-2xl backdrop-blur-[18px] backdrop-saturate-[1.4] md:hidden"
           >
-            {navLinks.map((l) => {
+            {links.map((l) => {
               const Icon = icons[l.id] ?? User;
               return (
                 <a
@@ -170,14 +196,16 @@ export function Navbar() {
                 </a>
               );
             })}
-            <a
-              href={site.resumeHref}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 block min-h-[48px] rounded-2xl bg-[#f2eee7] px-4 py-3.5 text-center font-semibold text-black"
-            >
-              Download Resume
-            </a>
+            {cta && (
+              <a
+                href={cta.href}
+                target={ctaTarget}
+                rel={ctaRel}
+                className="mt-2 block min-h-[48px] rounded-2xl bg-[#f2eee7] px-4 py-3.5 text-center font-semibold text-black"
+              >
+                {cta.label}
+              </a>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

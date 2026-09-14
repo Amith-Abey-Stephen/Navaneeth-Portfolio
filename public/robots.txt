@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://portfolioone.framer.ai/sitemap.xml
+Disallow: /studio

@@ -1,15 +1,21 @@
 "use client";
 
-import { aboutIntro } from "@/data/content";
+import type { About } from "@/lib/types";
+import { paragraphs } from "@/lib/format";
 import { GridLines, ScrollReveal, TextReveal } from "./ui";
 
-export function AboutIntro() {
+/** The About section: the statement composition that follows the hero. */
+export function AboutIntro({ data }: { data: About }) {
+  const paras = paragraphs(data.body);
   return (
-    <section className="relative overflow-hidden bg-transparent px-5 pb-24 pt-14 sm:px-6 md:px-12 md:pb-44 md:pt-24">
+    <section
+      id="about"
+      className="relative scroll-mt-24 overflow-hidden bg-transparent px-5 pb-24 pt-14 sm:px-6 md:px-12 md:pb-44 md:pt-24"
+    >
       <GridLines />
-      {/* bottom melt — red canvas mixes into the Projects black.
-          Ends in the exact Projects base (#0a0a0c) so the seam
-          disappears into a smooth color blend, never a hard cut. */}
+      {/* bottom melt — red canvas mixes into the black the page settles on.
+          Ends in the exact canvas base (#0a0a0c) so the seam disappears into
+          a smooth color blend, never a hard cut. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-[#3a0f06]/55 to-[#0a0a0c] md:h-72"
@@ -19,12 +25,16 @@ export function AboutIntro() {
           as="h2"
           className="text-balance font-heading text-[clamp(28px,7.5vw,36px)] font-semibold leading-[1.12] tracking-tight text-white sm:text-[36px] md:text-[60px]"
         >
-          {aboutIntro.heading}
+          {data.heading}
         </TextReveal>
-        <ScrollReveal delay={0.15}>
-          <p className="max-w-[62ch] font-heading text-[15px] font-light leading-[1.7] text-white/85 sm:text-[16px] md:text-[19px]">
-            {aboutIntro.body}
-          </p>
+        <ScrollReveal delay={0.15} className="min-w-0">
+          <div className="max-w-[62ch] space-y-5 font-heading text-[15px] font-light leading-[1.7] text-white/85 sm:text-[16px] md:text-[19px]">
+            {paras.map((p, i) => (
+              <p key={i} className="break-words">
+                {p}
+              </p>
+            ))}
+          </div>
         </ScrollReveal>
       </div>
     </section>

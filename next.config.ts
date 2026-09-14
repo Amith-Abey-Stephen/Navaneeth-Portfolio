@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        // Studio uploads (Supabase Storage) — the hero portrait goes through next/image.
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
     ],
   },
 };

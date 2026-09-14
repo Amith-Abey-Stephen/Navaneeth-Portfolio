@@ -296,3 +296,57 @@ body {
     transform: scaleX(1);
   }
 }
+
+/* ————————————————————————————————————————————————————————————————
+   Content studio (/studio) — a light, form-first workspace. Its palette is
+   scoped under .theme-studio so the public site's dark tokens above are
+   untouched: every color utility resolves its var() at point of use, so
+   `bg-bg` / `text-accent` mean the light values only inside the studio.
+   ———————————————————————————————————————————————————————————————— */
+@theme {
+  --color-surface: #ffffff;
+  --color-ink: #0b0d10;
+  --color-muted: #687280;
+  --color-line: #e6e4df;
+  --color-accent-soft: #ffe9e1;
+  --color-accent-ink: #b3300c;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-danger: #dc2626;
+  --shadow-pop: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.theme-studio {
+  --color-bg: #f7f6f3;
+  --color-accent: #ff4a1a;
+  color-scheme: light;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+.theme-studio ::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+}
+.theme-studio ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+}
+/* the site's white focus ring is invisible on the light studio */
+.theme-studio :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.theme-studio .utility {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.theme-studio .card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
