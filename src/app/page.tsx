@@ -1,29 +1,35 @@
-import { PublicSite } from "@/components/site/PublicSite";
-import { getPublishedSite } from "@/lib/published";
+import { Navbar } from "@/components/Navbar";
+import { Hero } from "@/components/Hero";
+import { AboutIntro } from "@/components/AboutIntro";
+import { Projects } from "@/components/Projects";
+import { Journey } from "@/components/Journey";
+import { Gallery } from "@/components/Gallery";
+import { Quote, About } from "@/components/About";
+import { Testimonials } from "@/components/Testimonials";
+import { Faq } from "@/components/Faq";
+import { Contact } from "@/components/Contact";
+import { Footer } from "@/components/Footer";
+import { SiteCanvas } from "@/components/SiteCanvas";
 
-// Rendered on every request so a publish shows up immediately.
-export const dynamic = "force-dynamic";
-
-export default async function Home() {
-  const { content } = await getPublishedSite();
-
-  const personJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: content.hero.name,
-    jobTitle: content.hero.tagline,
-    description: content.hero.shortBio,
-    email: `mailto:${content.contact.email}`,
-    ...(content.contact.linkedinUrl ? { sameAs: [content.contact.linkedinUrl] } : {}),
-  };
-
+export default function HomePage() {
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
-      />
-      <PublicSite content={content} />
-    </>
+    <main className="relative min-h-screen bg-[#070708] text-white">
+      {/* single continuous background canvas — all sections sit transparent over it */}
+      <SiteCanvas />
+      <div className="relative">
+        <Navbar />
+        <Hero />
+        <AboutIntro />
+        <Projects />
+        <Journey />
+        <Gallery />
+        <Quote />
+        <About />
+        <Testimonials />
+        <Faq />
+        <Contact />
+        <Footer />
+      </div>
+    </main>
   );
 }

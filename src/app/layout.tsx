@@ -1,56 +1,82 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, Schibsted_Grotesk, Spline_Sans_Mono } from "next/font/google";
+import { Inter, Inter_Tight, Great_Vibes } from "next/font/google";
 import "./globals.css";
+import { LenisProvider } from "@/components/LenisProvider";
+import { CursorTrail } from "@/components/CursorTrail";
+import { Preloader } from "@/components/Preloader";
 
-// Inter serves only the studio chrome; the public site's glass theme uses
-// Fraunces (display) / Schibsted Grotesk (body) / Spline Sans Mono (utility).
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const fraunces = Fraunces({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-fraunces",
-  display: "swap",
-  axes: ["opsz", "SOFT"],
-});
-const schibsted = Schibsted_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-schibsted",
+  variable: "--font-sans-next",
   display: "swap",
 });
-const splineMono = Spline_Sans_Mono({
+
+const interTight = Inter_Tight({
   subsets: ["latin"],
-  variable: "--font-spline-mono",
+  variable: "--font-display-next",
+  display: "swap",
+});
+
+const greatVibes = Great_Vibes({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-script-next",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Navaneeth C L — Associate Product Manager",
-    template: "%s · Navaneeth C L",
-  },
+  title: "Rohit Anand — Brand & Product Designer",
   description:
-    "Portfolio of Navaneeth C L — Associate Product Manager, Ex-Founder, CS Engineer. Building products people enjoy that deliver real results.",
+    "With a decade of experience, I'm a Brand designer turned UI designer with a strong background in design psychology, specializing in SaaS and B2B brands. 2200+ projects for UNICEF, Panasonic, David Bowie.",
   openGraph: {
-    title: "Navaneeth C L — Associate Product Manager",
+    type: "website",
+    title: "Rohit Anand — Brand & Product Designer",
     description:
-      "Product manager portfolio: growth outcomes, shipped products, and case studies across product creation, design, and strategy.",
-    type: "profile",
-    locale: "en_US",
+      "I turn ideas into meaningful products. 11 years, 2200+ projects, Framer development, branding, UI/UX.",
+    url: "https://portfolioone.framer.ai/",
+    images: [
+      "https://framerusercontent.com/images/OddaxilXD250xuNchKWZsLQEAiM.png",
+    ],
   },
   twitter: {
-    card: "summary",
-    title: "Navaneeth C L — Associate Product Manager",
-    description:
-      "Product manager portfolio: growth outcomes, shipped products, and case studies.",
+    card: "summary_large_image",
+    title: "Rohit Anand — Brand & Product Designer",
+    description: "I turn ideas into meaningful products.",
+    images: [
+      "https://framerusercontent.com/images/OddaxilXD250xuNchKWZsLQEAiM.png",
+    ],
+  },
+  icons: {
+    icon: [
+      {
+        url: "https://framerusercontent.com/images/natDIFhGYWBHS2DovQbtBRcxb8.png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "https://framerusercontent.com/images/zWx95oeoMnFgXk7BeqK4l1Aj62A.png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${fraunces.variable} ${schibsted.variable} ${splineMono.variable}`}
+      className={`${inter.variable} ${interTight.variable} ${greatVibes.variable}`}
     >
-      <body>{children}</body>
+      <body className="bg-[#09090b] text-white antialiased">
+        <LenisProvider>
+          <Preloader />
+          <CursorTrail />
+          {children}
+        </LenisProvider>
+      </body>
     </html>
   );
 }
