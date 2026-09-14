@@ -1,56 +1,43 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, Schibsted_Grotesk, Spline_Sans_Mono } from "next/font/google";
+import { Inter, Inter_Tight, Great_Vibes } from "next/font/google";
 import "./globals.css";
 
-// Inter serves only the studio chrome; the public site's glass theme uses
-// Fraunces (display) / Schibsted Grotesk (body) / Spline Sans Mono (utility).
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const fraunces = Fraunces({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-fraunces",
-  display: "swap",
-  axes: ["opsz", "SOFT"],
-});
-const schibsted = Schibsted_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-schibsted",
-  display: "swap",
-});
-const splineMono = Spline_Sans_Mono({
-  subsets: ["latin"],
-  variable: "--font-spline-mono",
+  variable: "--font-sans-next",
   display: "swap",
 });
 
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  variable: "--font-display-next",
+  display: "swap",
+});
+
+const greatVibes = Great_Vibes({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-script-next",
+  display: "swap",
+});
+
+// Page-level metadata (the home page derives its own from the published hero).
 export const metadata: Metadata = {
-  title: {
-    default: "Navaneeth C L — Associate Product Manager",
-    template: "%s · Navaneeth C L",
-  },
-  description:
-    "Portfolio of Navaneeth C L — Associate Product Manager, Ex-Founder, CS Engineer. Building products people enjoy that deliver real results.",
-  openGraph: {
-    title: "Navaneeth C L — Associate Product Manager",
-    description:
-      "Product manager portfolio: growth outcomes, shipped products, and case studies across product creation, design, and strategy.",
-    type: "profile",
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary",
-    title: "Navaneeth C L — Associate Product Manager",
-    description:
-      "Product manager portfolio: growth outcomes, shipped products, and case studies.",
-  },
+  title: "Navaneeth C L",
+  description: "Portfolio of Navaneeth C L — Associate Product Manager, Ex-Founder, CS Engineer.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${fraunces.variable} ${schibsted.variable} ${splineMono.variable}`}
+      className={`${inter.variable} ${interTight.variable} ${greatVibes.variable}`}
     >
-      <body>{children}</body>
+      <body className="bg-[#09090b] text-white antialiased">{children}</body>
     </html>
   );
 }

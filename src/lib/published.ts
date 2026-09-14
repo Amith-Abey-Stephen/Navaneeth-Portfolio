@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { SEED_CONTENT } from "./seed";
 import { getSupabase, supabaseEnabled } from "./supabase";
 import type { SiteContent } from "./types";
@@ -5,14 +6,15 @@ import type { SiteContent } from "./types";
 export type PublishedSite = {
   content: SiteContent;
   version: number | null;
-  live: boolean; // false → rendered from local seed (Supabase not configured/reachable)
+  live: boolean; // false → rendered from the built-in seed (Supabase not configured / reachable)
 };
 
 /**
- * Server-side read of the published content. The public site never touches `draft`.
- * Falls back to the seed so the site renders before Supabase is provisioned.
+ * Server-side read of the published content. The public site never touches
+ * `draft`. Falls back to the seed so the site renders before the backend is
+ * provisioned or if it is briefly unreachable.
  */
-export async function getPublishedSite(): Promise<PublishedSite> {
+export const getPublishedSite = cache(async function getPublishedSite(): Promise<PublishedSite> {
   if (!supabaseEnabled()) {
     return { content: SEED_CONTENT, version: null, live: false };
   }
@@ -29,4 +31,4 @@ export async function getPublishedSite(): Promise<PublishedSite> {
   } catch {
     return { content: SEED_CONTENT, version: null, live: false };
   }
-}
+});

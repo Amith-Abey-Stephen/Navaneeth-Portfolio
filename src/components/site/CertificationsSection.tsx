@@ -1,68 +1,87 @@
 "use client";
 
-import type { CertificationItem } from "@/lib/types";
 import { ArrowUpRight, Award } from "lucide-react";
-import { motion } from "motion/react";
-import { EASE, Rise } from "./motion/primitives";
-import { formatMonth, RatioImage, SectionShell } from "./shared";
+import type { CertificationItem } from "@/lib/types";
+import { formatMonth, pad2 } from "@/lib/format";
+import { GridLines, ScrollReveal } from "@/components/ui";
+import { GhostTitle } from "./GhostTitle";
 
-function CertificationCard({ item, index }: { item: CertificationItem; index: number }) {
-  const delay = index * 0.09;
-  return (
-    <Rise delay={delay}>
-      <article className="glass-lite group flex h-full flex-col p-6 transition-colors duration-200 hover:!border-[rgb(243_233_216_/_0.26)]">
-        <div className="flex items-start gap-4">
-          {/* The seal stamps in: scale settles from above-size, like a press. */}
-          <motion.div
-            initial={{ scale: 1.25, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true, margin: "0px 0px -40px 0px" }}
-            transition={{ duration: 0.35, ease: EASE, delay: delay + 0.15 }}
-            className="shrink-0 rounded-xl transition-shadow duration-300 group-hover:shadow-[0_0_0_2px_rgba(201,162,106,0.4)]"
-          >
-            {item.badge?.url ? (
-              <RatioImage image={item.badge} alt="" className="h-12 w-12 rounded-xl border border-line" />
-            ) : (
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft">
-                <Award className="h-6 w-6 text-accent-ink" strokeWidth={2} />
-              </span>
-            )}
-          </motion.div>
-          <div className="min-w-0">
-            <h3 className="leading-snug font-semibold tracking-tight break-words">{item.title}</h3>
-            <p className="mt-1 text-sm text-muted break-words">
-              {item.issuer}
-              {item.date ? ` · ${formatMonth(item.date)}` : ""}
-            </p>
-          </div>
-        </div>
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-5">
-          {item.credentialId ? <p className="utility truncate">ID · {item.credentialId}</p> : <span />}
-          {item.credentialUrl && (
-            <a
-              href={item.credentialUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-ink transition-colors duration-200 hover:text-accent-ink"
-            >
-              Verify
-              <ArrowUpRight className="h-4 w-4" strokeWidth={2} />
-            </a>
-          )}
-        </div>
-      </article>
-    </Rise>
-  );
-}
-
+/**
+ * Certifications in the reference's frosted list container (the FAQ glass):
+ * numbered rows with the credential on the left and the badge or link on
+ * the right. Rows only become links when a credential URL exists.
+ */
 export function CertificationsSection({ items }: { items: CertificationItem[] }) {
   return (
-    <SectionShell id="certifications" eyebrow="Certifications" heading="Credentials">
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item, i) => (
-          <CertificationCard key={item.id} item={item} index={i} />
-        ))}
+    <section
+      id="certifications"
+      className="relative scroll-mt-24 overflow-hidden bg-transparent px-4 pb-16 pt-6 sm:px-6 md:px-10 md:pb-20 md:pt-10"
+    >
+      <GridLines />
+      <GhostTitle>Certifications</GhostTitle>
+      <div className="relative mx-auto mt-2 max-w-[1100px] overflow-hidden rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl md:mt-6">
+        {items.map((c, i) => {
+          const meta = [
+            c.issuer,
+            c.date ? formatMonth(c.date) : "",
+            c.credentialId ? `Credential ID ${c.credentialId}` : "",
+          ].filter(Boolean);
+          const inner = (
+            <>
+              <span className="font-heading text-[14px] tabular-nums text-white/40 md:text-[16px]">{pad2(i + 1)}</span>
+              <span className="min-w-0">
+                <span className="block text-balance break-words font-heading text-[15px] font-medium leading-snug text-white sm:text-[16px] md:text-[20px]">
+                  {c.title}
+                </span>
+                <span className="mt-1.5 flex flex-wrap gap-x-2 gap-y-1 font-heading text-[13px] text-white/55 sm:text-[14px]">
+                  {meta.map((m, mi) => (
+                    <span key={mi} className="break-words border-l border-white/20 pl-2 first:border-l-0 first:pl-0">
+                      {m}
+                    </span>
+                  ))}
+                </span>
+              </span>
+              <span className="justify-self-end">
+                {c.badge?.url ? (
+                  <span className="block size-10 overflow-hidden rounded-lg border border-white/10 bg-white/[0.06] sm:size-11">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={c.badge.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  </span>
+                ) : c.credentialUrl ? (
+                  <span className="grid size-9 place-items-center rounded-full bg-white/[0.06] text-white transition-transform duration-300 group-hover:rotate-45 sm:size-8 sm:bg-transparent">
+                    <ArrowUpRight size={20} aria-hidden />
+                  </span>
+                ) : (
+                  <span className="grid size-9 place-items-center rounded-full text-white/35 sm:size-8">
+                    <Award size={20} aria-hidden />
+                  </span>
+                )}
+              </span>
+            </>
+          );
+          const rowClass =
+            "grid min-h-[64px] w-full grid-cols-[32px_1fr_44px] items-center gap-2 px-4 py-5 text-left sm:grid-cols-[48px_1fr_48px] md:px-6 md:py-6";
+          return (
+            <ScrollReveal key={c.id} delay={Math.min(i * 0.04, 0.2)}>
+              <div className="border-b border-white/20 last:border-b-0">
+                {c.credentialUrl ? (
+                  <a
+                    href={c.credentialUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${c.title} — view credential`}
+                    className={`group ${rowClass} transition-colors hover:bg-white/[0.04] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white`}
+                  >
+                    {inner}
+                  </a>
+                ) : (
+                  <div className={rowClass}>{inner}</div>
+                )}
+              </div>
+            </ScrollReveal>
+          );
+        })}
       </div>
-    </SectionShell>
+    </section>
   );
 }

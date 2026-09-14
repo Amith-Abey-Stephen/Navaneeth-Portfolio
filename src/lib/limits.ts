@@ -1,7 +1,7 @@
-// Field-level limits — spec section 5. Enforced in the studio forms (primary defense);
-// components line-clamp/wrap as a backstop. Item caps without a number in the spec
-// (stats, experience, projects, tools, skill groups, certifications, education) are
-// sized generously against the seed content — do not shrink them.
+// Field-level limits — build prompt §7–§15. Enforced in the studio forms (the
+// primary defense); the section components clamp/wrap as a backstop.
+// Item caps the prompt leaves to "the implementation" are sized against the
+// cloned layouts: the stats row is a fixed 4-up grid, so it caps at 4.
 
 export const CHAR_LIMITS = {
   hero: { name: 60, tagline: 80, shortBio: 320 },
@@ -13,11 +13,10 @@ export const CHAR_LIMITS = {
   skillGroup: { category: 40, skill: 40 },
   certification: { title: 90, issuer: 50 },
   education: { degree: 110, institution: 70 },
-  caseStudy: { heading: 90, body: 1200, metricValue: 12, metricLabel: 40 },
 } as const;
 
 export const ITEM_LIMITS = {
-  stats: 6,
+  stats: 4,
   experience: 12,
   experienceBullets: 4,
   experienceTags: 6,
@@ -28,8 +27,6 @@ export const ITEM_LIMITS = {
   skillsPerGroup: 10,
   certifications: 12,
   education: 6,
-  caseStudyBlocks: 8,
-  caseStudyMetrics: 4,
 } as const;
 
 export const HISTORY_LIMIT = 20;

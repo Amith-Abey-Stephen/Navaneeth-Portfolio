@@ -1,10 +1,22 @@
+import type { Metadata } from "next";
 import { PublicSite } from "@/components/site/PublicSite";
 import { getPublishedSite } from "@/lib/published";
 
 // Rendered on every request so a publish shows up immediately.
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export async function generateMetadata(): Promise<Metadata> {
+  const { content } = await getPublishedSite();
+  const title = `${content.hero.name} — ${content.hero.tagline}`;
+  return {
+    title,
+    description: content.hero.shortBio,
+    openGraph: { title, description: content.hero.shortBio, type: "profile" },
+    twitter: { card: "summary", title, description: content.hero.shortBio },
+  };
+}
+
+export default async function HomePage() {
   const { content } = await getPublishedSite();
 
   const personJsonLd = {

@@ -1,310 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #fafaf8;
-  --color-surface: #ffffff;
-  --color-ink: #0b0d10;
-  --color-ink-soft: #141718;
-  --color-muted: #687280;
-  --color-line: #e8e6e1;
-  --color-accent: #b9854c;
-  --color-accent-soft: #f3ead9;
-  --color-accent-ink: #7c5a2e;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  --color-bg: #09090b;
+  --color-bg-alt: #131313;
+  --color-bg-deep: #000000;
+  --color-card: #161616;
+  --color-border: rgba(255, 255, 255, 0.09);
+  --color-text-mute: rgba(255, 255, 255, 0.62);
+  --color-text-sub: rgba(255, 255, 255, 0.82);
+  --color-accent: #ff4a1a;
+  --color-cream: #f5f1ea;
 
-  --font-sans: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;
-  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
-  --font-body: var(--font-schibsted), system-ui, -apple-system, sans-serif;
-  --font-utility: var(--font-spline-mono), ui-monospace, "SF Mono", monospace;
-
-  --radius-card: 24px;
-  --radius-input: 12px;
-  --radius-btn: 14px;
-
-  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.04);
-  --shadow-pop: 0 12px 40px rgba(0, 0, 0, 0.1);
+  --font-display: var(--font-display-next), "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-body: var(--font-sans-next), "Inter", system-ui, sans-serif;
+  --font-heading: var(--font-display-next), "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-script: var(--font-script-next), "Great Vibes", cursive;
 }
 
-html {
-  @media (prefers-reduced-motion: no-preference) {
-    scroll-behavior: smooth;
-  }
-}
-
-body {
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-::selection {
-  background: var(--color-accent-soft);
-  color: var(--color-accent-ink);
-}
-
-/* Visible keyboard focus on every interactive element — quality floor, spec §8. */
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* ————————————————————————————————————————————————————————————————
-   Liquid glass theme — scoped to the public site (PublicSite /
-   CaseStudyView roots carry .theme-glass). The studio keeps the
-   global light tokens above untouched; the section components pick
-   these values up automatically because every Tailwind color utility
-   resolves its var() at point of use.
-   ———————————————————————————————————————————————————————————————— */
-.theme-glass {
-  /* Named tokens: espresso graphite / warm porcelain / smoked taupe /
-     antique brass / burnished brass / candlelight tint. */
-  --color-bg: #15120e;
-  --color-surface: #201b15;
-  --color-ink: #f2ece2;
-  --color-ink-soft: #d8d0c2;
-  --color-muted: #a89e8f;
-  --color-line: rgba(243, 233, 216, 0.14);
-  --color-accent: #c9a26a;
-  --color-accent-soft: rgba(201, 162, 106, 0.13);
-  --color-accent-ink: #dec08d;
-  --glass-tint: 243 233 216;
-  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.35);
-  --shadow-pop: 0 24px 64px rgba(0, 0, 0, 0.5);
-
-  font-family: var(--font-body);
-  background: var(--color-bg);
-  color: var(--color-ink);
-}
-
-.theme-glass ::selection {
-  background: rgba(201, 162, 106, 0.35);
-  color: #f6f1e7;
-}
-
-.theme-glass :focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 3px;
-  border-radius: 8px;
-}
-
-/* ——— The material ———
-   True glass: laminate tint over a dark scrim (the scrim guarantees text
-   contrast no matter what the backdrop is doing), backdrop blur+saturate
-   so the material genuinely refracts the light layer behind it, an inner
-   top rim that catches light, and ambient depth below. */
-@utility glass {
-  position: relative;
-  background:
-    linear-gradient(180deg, rgb(var(--glass-tint) / 0.09), rgb(var(--glass-tint) / 0.03)),
-    rgba(21, 18, 14, 0.38);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(243, 233, 216, 0.14);
-  border-radius: 28px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 251, 242, 0.12),
-    inset 0 0 0 0.5px rgba(255, 251, 242, 0.05),
-    0 16px 40px rgba(0, 0, 0, 0.35);
-}
-
-/* Non-blurred laminate for dense grids (tools, skills, cert cards) — the
-   blur budget stays with the few large panels; these still read as glass
-   because the moving light bleeds through the translucent fill. */
-@utility glass-lite {
-  position: relative;
-  background:
-    linear-gradient(180deg, rgb(var(--glass-tint) / 0.07), rgb(var(--glass-tint) / 0.02)),
-    rgba(21, 18, 14, 0.5);
-  border: 1px solid rgba(243, 233, 216, 0.12);
-  border-radius: 20px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 251, 242, 0.09),
-    0 10px 30px rgba(0, 0, 0, 0.25);
-}
-
-/* Chip-scale glass for pills, tags, and small controls. */
-@utility glass-chip {
-  background: rgb(var(--glass-tint) / 0.07);
-  border: 1px solid rgba(243, 233, 216, 0.13);
-  box-shadow: inset 0 1px 0 rgba(255, 251, 242, 0.08);
-}
-
-/* Continuous (squircle) corners where the platform has them — a quiet part
-   of what makes the material read considered rather than default. */
-@supports (corner-shape: squircle) {
-  .glass,
-  .glass-lite {
-    corner-shape: squircle;
-  }
-}
-
-/* ——— The backdrop scene ———
-   Painted by GlassBackdrop: base canvas, warm blooms drifting slowly,
-   the living light (cursor on desktop / scroll on mobile), fine grain,
-   and an edge vignette that grounds the composition. */
-.gl-scene {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background: var(--color-bg);
-}
-.gl-grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-}
-.gl-vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(120% 100% at 50% 20%, transparent 55%, rgba(0, 0, 0, 0.45));
-}
-
-/* Motion — one physics system: cubic-bezier(0.2,0.6,0.2,1), transform+opacity
-   only, no bounce. Hero choreography is CSS-first (plays without JS, instant
-   under reduced motion via the global override above). */
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes rise-in {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-  .rise-in {
-    animation: rise-in 500ms cubic-bezier(0.2, 0.6, 0.2, 1) both;
-  }
-
-  @keyframes word-rise {
-    from {
-      transform: translateY(110%);
-    }
-    to {
-      transform: translateY(0);
-    }
-  }
-  .word-mask {
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: top;
-  }
-  .word-mask > span {
-    display: inline-block;
-    animation: word-rise 600ms cubic-bezier(0.2, 0.6, 0.2, 1) both;
-  }
-
-  @keyframes dot-land {
-    from {
-      opacity: 0;
-      transform: scale(0.4);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  .dot-land {
-    display: inline-block;
-    animation: dot-land 420ms cubic-bezier(0.2, 0.6, 0.2, 1) both;
-  }
-
-  @keyframes ambient-drift {
-    0% {
-      transform: translate3d(-3%, -2%, 0) scale(1);
-    }
-    50% {
-      transform: translate3d(3%, 3%, 0) scale(1.08);
-    }
-    100% {
-      transform: translate3d(-3%, -2%, 0) scale(1);
-    }
-  }
-  .ambient {
-    animation: ambient-drift 60s ease-in-out infinite;
-  }
-
-  /* The signature's opening beat: one light sweep across the hero pane as
-     the material introduces itself. Desktop composition only — the mobile
-     and tablet hero deliberately has no pane and a simpler choreography. */
-  @media (min-width: 1024px) {
-    @keyframes glass-sweep {
-      from {
-        transform: translateX(-140%) skewX(-14deg);
-      }
-      to {
-        transform: translateX(320%) skewX(-14deg);
-      }
-    }
-    .glass-sweep::after {
-      content: "";
-      position: absolute;
-      top: -1px;
-      bottom: -1px;
-      left: 0;
-      width: 42%;
-      pointer-events: none;
-      background: linear-gradient(
-        100deg,
-        transparent,
-        rgba(255, 251, 242, 0.05) 40%,
-        rgba(255, 251, 242, 0.14) 50%,
-        rgba(255, 251, 242, 0.05) 60%,
-        transparent
-      );
-      animation: glass-sweep 1.5s cubic-bezier(0.2, 0.6, 0.2, 1) 0.6s both;
-    }
-  }
-}
-
-/* The hero pane: on desktop it is the site's largest glass surface; on
-   mobile and tablet the hero sits directly on the canvas (its own
-   composition, not a compressed pane), so below lg this class paints
-   nothing. */
-@media (min-width: 1024px) {
-  .hero-pane {
-    position: relative;
-    overflow: hidden;
-    background:
-      linear-gradient(180deg, rgb(var(--glass-tint) / 0.09), rgb(var(--glass-tint) / 0.03)),
-      rgba(21, 18, 14, 0.38);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
-    backdrop-filter: blur(20px) saturate(140%);
-    border: 1px solid rgba(243, 233, 216, 0.14);
-    border-radius: 36px;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 251, 242, 0.12),
-      0 24px 64px rgba(0, 0, 0, 0.4);
-    padding: 3.5rem;
-  }
-  @supports (corner-shape: squircle) {
-    .hero-pane {
-      corner-shape: squircle;
-    }
-  }
-}
-
-/* Lenis smooth scroll */
 html.lenis,
 html.lenis body {
   height: auto;
@@ -312,42 +24,329 @@ html.lenis body {
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
 .lenis.lenis-stopped {
   overflow: hidden;
 }
 
-/* Custom cursor — native cursor hidden only on precise pointers while the
-   replacement is mounted; text fields always get the native cursor back. */
-@media (pointer: fine) {
-  html.custom-cursor,
-  html.custom-cursor * {
-    cursor: none !important;
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: auto;
+}
+
+body {
+  background: var(--color-bg);
+  color: #fff;
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: #ff4a1a;
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 99px;
+}
+
+/* ---------- utilities ---------- */
+.font-script {
+  font-family: var(--font-script);
+}
+
+.text-stroke-ghost {
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.14);
+  color: transparent;
+}
+
+.ghost-huge {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: rgba(255, 255, 255, 0.13);
+  user-select: none;
+  pointer-events: none;
+}
+
+.vertical-lines {
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(100% / 6 - 1px),
+    rgba(255, 255, 255, 0.07) calc(100% / 6 - 1px),
+    rgba(255, 255, 255, 0.07) calc(100% / 6)
+  );
+}
+
+/* shimmer button (Book Meeting) */
+.shimmer-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.shimmer-btn .shimmer-label {
+  position: relative;
+  z-index: 2;
+}
+.shimmer-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    -75deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+}
+.shimmer-btn:hover::after {
+  opacity: 1;
+  animation: shimmer-border 1.4s linear infinite;
+}
+@keyframes shimmer-border {
+  0% {
+    background-position: 200% 0;
   }
-  html.custom-cursor input,
-  html.custom-cursor textarea,
-  html.custom-cursor select {
-    cursor: auto !important;
+  100% {
+    background-position: -200% 0;
   }
 }
 
-/* Utility face — captions, labels, dates. The glass theme swaps it onto the
-   mono utility face; the studio keeps the original treatment. */
-.utility {
+/* Giant "Rohit" slow vertical sheen — matches the Framer hero:
+   grey gradient top <-> full white, ~4s loop with holds at each end */
+.name-sheen {
+  background-image: linear-gradient(
+    to bottom,
+    #737373 0%,
+    #c6c6c6 13%,
+    #ffffff 24%,
+    #ffffff 100%
+  );
+  background-size: 100% 200%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: name-sheen 4s ease-in-out infinite;
+}
+@keyframes name-sheen {
+  0%,
+  32% {
+    background-position: 50% 0%;
+  }
+  50%,
+  82% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 50% 0%;
+  }
+}
+
+/* "Book Meeting" label wipe — dark band sweeps left -> right across
+   the text every ~2s (~0.6s sweep + pause full-bright) */
+.book-shine {
+  display: inline-block;
+  background-image: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #ffffff 45%,
+    rgba(255, 255, 255, 0.05) 50%,
+    #ffffff 55%,
+    #ffffff 100%
+  );
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: book-shine 2s linear infinite;
+}
+@keyframes book-shine {
+  0% {
+    background-position: 115% 0;
+  }
+  32% {
+    background-position: -15% 0;
+  }
+  100% {
+    background-position: -15% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .name-sheen,
+  .book-shine {
+    animation: none;
+  }
+  .animate-marquee,
+  .animate-marquee-fast,
+  .animate-marquee-rev,
+  .animate-marquee-slow {
+    animation: none;
+  }
+}
+
+/* marquees */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes marquee-rev {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+.animate-marquee-fast {
+  animation: marquee 20s linear infinite;
+}
+.animate-marquee-rev {
+  animation: marquee-rev 32s linear infinite;
+}
+.animate-marquee-slow {
+  animation: marquee 48s linear infinite;
+}
+.marquee-paused:hover .animate-marquee,
+.marquee-paused:hover .animate-marquee-fast,
+.marquee-paused:hover .animate-marquee-rev,
+.marquee-paused:hover .animate-marquee-slow,
+.marquee-paused:focus-within .animate-marquee,
+.marquee-paused:focus-within .animate-marquee-fast,
+.marquee-paused:focus-within .animate-marquee-rev,
+.marquee-paused:focus-within .animate-marquee-slow {
+  animation-play-state: paused;
+}
+
+/* consistent, visible keyboard focus everywhere */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* grain */
+.noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+/* hide cursor trail on touch */
+@media (hover: none) {
+  #cursor-trail-canvas {
+    display: none !important;
+  }
+}
+
+@keyframes journey-img-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(24px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes preloader-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ————————————————————————————————————————————————————————————————
+   Content studio (/studio) — a light, form-first workspace. Its palette is
+   scoped under .theme-studio so the public site's dark tokens above are
+   untouched: every color utility resolves its var() at point of use, so
+   `bg-bg` / `text-accent` mean the light values only inside the studio.
+   ———————————————————————————————————————————————————————————————— */
+@theme {
+  --color-surface: #ffffff;
+  --color-ink: #0b0d10;
+  --color-muted: #687280;
+  --color-line: #e6e4df;
+  --color-accent-soft: #ffe9e1;
+  --color-accent-ink: #b3300c;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-danger: #dc2626;
+  --shadow-pop: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.theme-studio {
+  --color-bg: #f7f6f3;
+  --color-accent: #ff4a1a;
+  color-scheme: light;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+.theme-studio ::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+}
+.theme-studio ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+}
+/* the site's white focus ring is invisible on the light studio */
+.theme-studio :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.theme-studio .utility {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
-.theme-glass .utility {
-  font-family: var(--font-utility);
-  font-weight: 500;
-  letter-spacing: 0.14em;
-}
-
-.card {
+.theme-studio .card {
   background: var(--color-surface);
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
 }

@@ -1,60 +1,54 @@
 "use client";
 
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { ChevronDown, ChevronUp, GripVertical, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { FieldShell } from "./fields";
 
-function SortableRow({
-  id,
-  header,
-  children,
+export function arrayMove<T>(list: T[], from: number, to: number): T[] {
+  const next = [...list];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+}
+
+function MoveButtons({
+  index,
+  count,
+  label,
+  onMove,
 }: {
-  id: string;
-  header: React.ReactNode;
-  children?: React.ReactNode;
+  index: number;
+  count: number;
+  label: string;
+  onMove: (from: number, to: number) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   return (
-    <div
-      ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`rounded-2xl border border-line bg-surface ${isDragging ? "z-10 shadow-pop" : ""}`}
-    >
-      <div className="flex items-center gap-2 px-4 pt-3.5 pb-0">
-        <button
-          type="button"
-          aria-label="Drag to reorder"
-          className="cursor-grab touch-none rounded-md p-1 text-muted hover:text-ink active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-4 w-4" strokeWidth={2} />
-        </button>
-        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">{header}</div>
-      </div>
-      {children && <div className="px-4 pt-3 pb-4 pl-11">{children}</div>}
+    <div className="flex shrink-0 flex-col">
+      <button
+        type="button"
+        aria-label={`Move ${label} up`}
+        disabled={index === 0}
+        onClick={() => onMove(index, index - 1)}
+        className="rounded p-0.5 text-muted transition-colors duration-200 hover:text-ink disabled:opacity-30"
+      >
+        <ChevronUp className="h-4 w-4" strokeWidth={2} />
+      </button>
+      <button
+        type="button"
+        aria-label={`Move ${label} down`}
+        disabled={index === count - 1}
+        onClick={() => onMove(index, index + 1)}
+        className="rounded p-0.5 text-muted transition-colors duration-200 hover:text-ink disabled:opacity-30"
+      >
+        <ChevronDown className="h-4 w-4" strokeWidth={2} />
+      </button>
     </div>
   );
 }
 
 /**
- * Drag-to-reorder list of entities (experience items, projects, …). The add
+ * Ordered list of entities (experience items, projects, …). Entries reorder
+ * with keyboard-friendly move buttons, collapse to a title row, and the add
  * control disables at the cap — the primary layout guardrail for list length.
  */
 export function EntityList<T extends { id: string }>({
@@ -76,18 +70,19 @@ export function EntityList<T extends { id: string }>({
   itemTitle: (item: T) => string;
   renderFields: (item: T, update: (patch: Partial<T>) => void) => React.ReactNode;
 }) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+  const full = items.length >= max;
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const from = items.findIndex((i) => i.id === active.id);
-    const to = items.findIndex((i) => i.id === over.id);
-    if (from < 0 || to < 0) return;
+  function move(from: number, to: number) {
+    if (to < 0 || to >= items.length) return;
     onChange(arrayMove(items, from, to));
+  }
+
+  function add() {
+    if (full) return;
+    const item = create();
+    onChange([...items, item]);
+    setOpen((o) => ({ ...o, [item.id]: true }));
   }
 
   return (
@@ -97,46 +92,53 @@ export function EntityList<T extends { id: string }>({
           {emptyLabel}
         </p>
       )}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-3">
-            {items.map((item) => (
-              <SortableRow
-                key={item.id}
-                id={item.id}
-                header={
-                  <>
-                    <span className="truncate text-sm font-semibold">
-                      {itemTitle(item).trim() || "Untitled"}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label="Remove item"
-                      onClick={() => {
-                        if (window.confirm("Remove this item from the draft?")) {
-                          onChange(items.filter((i) => i.id !== item.id));
-                        }
-                      }}
-                      className="rounded-md p-1.5 text-muted transition-colors duration-200 hover:text-danger"
-                    >
-                      <Trash2 className="h-4 w-4" strokeWidth={2} />
-                    </button>
-                  </>
-                }
+      {items.map((item, index) => {
+        const title = itemTitle(item).trim() || "Untitled";
+        const expanded = open[item.id] ?? false;
+        return (
+          <div key={item.id} className="rounded-2xl border border-line bg-surface">
+            <div className="flex items-center gap-2 px-3 py-2.5">
+              <MoveButtons index={index} count={items.length} label={title} onMove={move} />
+              <button
+                type="button"
+                aria-expanded={expanded}
+                onClick={() => setOpen((o) => ({ ...o, [item.id]: !expanded }))}
+                className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left transition-colors duration-200 hover:bg-bg"
               >
+                <span className="truncate text-sm font-semibold">{title}</span>
+                <ChevronDown
+                  className={`h-4 w-4 shrink-0 text-muted transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+                  strokeWidth={2}
+                />
+              </button>
+              <button
+                type="button"
+                aria-label={`Remove ${title}`}
+                onClick={() => {
+                  if (window.confirm("Remove this item from the draft?")) {
+                    onChange(items.filter((i) => i.id !== item.id));
+                  }
+                }}
+                className="shrink-0 rounded-md p-1.5 text-muted transition-colors duration-200 hover:text-danger"
+              >
+                <Trash2 className="h-4 w-4" strokeWidth={2} />
+              </button>
+            </div>
+            {expanded && (
+              <div className="border-t border-line px-4 pb-4 pt-4">
                 {renderFields(item, (patch) =>
                   onChange(items.map((i) => (i.id === item.id ? { ...i, ...patch } : i))),
                 )}
-              </SortableRow>
-            ))}
+              </div>
+            )}
           </div>
-        </SortableContext>
-      </DndContext>
+        );
+      })}
       <div className="flex items-center justify-between">
         <button
           type="button"
-          disabled={items.length >= max}
-          onClick={() => onChange([...items, create()])}
+          disabled={full}
+          onClick={add}
           className="inline-flex items-center gap-1.5 rounded-[14px] border border-line bg-surface px-4 py-2 text-sm font-medium transition-colors duration-200 hover:border-ink/30 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Plus className="h-4 w-4" strokeWidth={2} />
@@ -144,6 +146,7 @@ export function EntityList<T extends { id: string }>({
         </button>
         <span className="text-xs text-muted tabular-nums">
           {items.length} of {max}
+          {full ? " · limit reached" : ""}
         </span>
       </div>
     </div>
@@ -174,6 +177,9 @@ export function StringListEditor({
     if (to < 0 || to >= values.length) return;
     onChange(arrayMove(values, from, to));
   };
+  const full = values.length >= maxItems;
+  const inputClass =
+    "w-full rounded-[12px] border border-line bg-surface px-3.5 py-2.5 text-sm transition-colors duration-200 focus:border-accent focus:outline-none";
 
   return (
     <FieldShell
@@ -187,51 +193,43 @@ export function StringListEditor({
       <div className="space-y-2">
         {values.map((v, i) => (
           <div key={i} className="flex items-start gap-1.5">
-            {multiline ? (
-              <textarea
-                className="w-full resize-y rounded-[12px] border border-line bg-surface px-3.5 py-2.5 text-sm leading-relaxed transition-colors duration-200 focus:border-accent focus:outline-none"
-                rows={2}
-                value={v}
-                maxLength={maxChars}
-                placeholder={placeholder}
-                onChange={(e) =>
-                  onChange(values.map((x, j) => (j === i ? e.target.value.slice(0, maxChars) : x)))
-                }
-              />
-            ) : (
-              <input
-                className="w-full rounded-[12px] border border-line bg-surface px-3.5 py-2.5 text-sm transition-colors duration-200 focus:border-accent focus:outline-none"
-                value={v}
-                maxLength={maxChars}
-                placeholder={placeholder}
-                onChange={(e) =>
-                  onChange(values.map((x, j) => (j === i ? e.target.value.slice(0, maxChars) : x)))
-                }
-              />
-            )}
-            <div className="flex shrink-0 flex-col">
-              <button
-                type="button"
-                aria-label="Move up"
-                disabled={i === 0}
-                onClick={() => move(i, i - 1)}
-                className="rounded p-0.5 text-muted hover:text-ink disabled:opacity-30"
+            <div className="min-w-0 flex-1">
+              {multiline ? (
+                <textarea
+                  className={`${inputClass} resize-y leading-relaxed`}
+                  rows={2}
+                  value={v}
+                  maxLength={maxChars}
+                  placeholder={placeholder}
+                  aria-label={`${label} ${i + 1}`}
+                  onChange={(e) =>
+                    onChange(values.map((x, j) => (j === i ? e.target.value.slice(0, maxChars) : x)))
+                  }
+                />
+              ) : (
+                <input
+                  className={inputClass}
+                  value={v}
+                  maxLength={maxChars}
+                  placeholder={placeholder}
+                  aria-label={`${label} ${i + 1}`}
+                  onChange={(e) =>
+                    onChange(values.map((x, j) => (j === i ? e.target.value.slice(0, maxChars) : x)))
+                  }
+                />
+              )}
+              <span
+                className={`mt-1 block text-right text-[11px] tabular-nums ${
+                  v.length >= maxChars ? "text-danger" : "text-muted"
+                }`}
               >
-                <ChevronUp className="h-4 w-4" strokeWidth={2} />
-              </button>
-              <button
-                type="button"
-                aria-label="Move down"
-                disabled={i === values.length - 1}
-                onClick={() => move(i, i + 1)}
-                className="rounded p-0.5 text-muted hover:text-ink disabled:opacity-30"
-              >
-                <ChevronDown className="h-4 w-4" strokeWidth={2} />
-              </button>
+                {v.length}/{maxChars}
+              </span>
             </div>
+            <MoveButtons index={i} count={values.length} label={`${label} ${i + 1}`} onMove={move} />
             <button
               type="button"
-              aria-label="Remove"
+              aria-label={`Remove ${label} ${i + 1}`}
               onClick={() => onChange(values.filter((_, j) => j !== i))}
               className="mt-1 shrink-0 rounded-md p-1.5 text-muted transition-colors duration-200 hover:text-danger"
             >
@@ -241,7 +239,7 @@ export function StringListEditor({
         ))}
         <button
           type="button"
-          disabled={values.length >= maxItems}
+          disabled={full}
           onClick={() => onChange([...values, ""])}
           className="inline-flex items-center gap-1.5 rounded-[12px] border border-dashed border-line px-3.5 py-2 text-sm font-medium text-muted transition-colors duration-200 hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
         >

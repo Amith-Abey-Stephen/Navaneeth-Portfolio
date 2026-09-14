@@ -1,57 +1,58 @@
 "use client";
 
+import { Award } from "lucide-react";
 import type { StatItem } from "@/lib/types";
-import { BadgeCheck } from "lucide-react";
-import { CountValue, Rise } from "./motion/primitives";
-import { RatioImage } from "./shared";
+import { CountUp } from "@/components/Journey";
+import { GridLines, ScrollReveal } from "@/components/ui";
 
-const COLS: Record<number, string> = {
-  1: "sm:grid-cols-1",
-  2: "sm:grid-cols-2",
-  3: "sm:grid-cols-3",
-  4: "sm:grid-cols-4",
-  5: "sm:grid-cols-3 lg:grid-cols-5",
-  6: "sm:grid-cols-3 lg:grid-cols-6",
-};
-
+/**
+ * The reference's 4-up number row: counting numbers, hairline dividers,
+ * 2×2 on mobile. A value like "12+" counts up; a plain string is shown as
+ * is; an empty value hands the slot to the icon (or a neutral glyph).
+ */
 export function StatsSection({ items }: { items: StatItem[] }) {
-  const cols = COLS[Math.min(items.length, 6)] ?? COLS[4];
-
   return (
-    <section id="stats" className="scroll-mt-24 px-5 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl py-6">
-        <Rise>
-          <div className="glass overflow-hidden">
-            <div className={`grid grid-cols-2 ${cols}`}>
-              {items.map((item, i) => (
-                <Rise
-                  key={item.id}
-                  delay={0.08 * i}
-                  y={10}
-                  className="flex flex-col items-center justify-center gap-1.5 px-4 py-8 text-center"
+    <section
+      id="stats"
+      className="relative scroll-mt-24 bg-transparent px-5 py-10 sm:px-6 md:px-12 md:py-16"
+    >
+      <GridLines />
+      <h2 className="sr-only">Stats</h2>
+      <div className="relative mx-auto max-w-[1200px] text-center">
+        <div className="grid grid-cols-2 md:grid-flow-col md:auto-cols-fr md:grid-cols-none">
+          {items.map((s, i) => {
+            const m = /^(\d+)(.*)$/.exec(s.value.trim());
+            return (
+              <ScrollReveal key={s.id} delay={i * 0.08}>
+                <div
+                  className={`min-w-0 px-4 py-6 md:py-2 ${i > 0 ? "border-l border-white/15" : ""} ${
+                    i >= 2 ? "max-md:border-t max-md:border-white/15" : ""
+                  } ${i % 2 === 0 ? "max-md:border-l-0" : ""}`}
                 >
-                  <div className="flex h-10 items-center justify-center">
-                    {item.value ? (
-                      <span className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
-                        <CountValue value={item.value} />
-                      </span>
-                    ) : item.icon?.url ? (
-                      <RatioImage
-                        image={item.icon}
-                        alt=""
-                        className="h-9 w-9 rounded-lg"
-                        fallbackText={item.label}
-                      />
+                  <p className="font-heading text-[32px] font-bold leading-none text-white sm:text-[40px] md:text-[56px]">
+                    {m ? (
+                      <CountUp end={Number(m[1])} suffix={m[2]} />
+                    ) : s.value.trim() ? (
+                      <span className="break-words">{s.value}</span>
                     ) : (
-                      <BadgeCheck className="h-8 w-8 text-accent" strokeWidth={2} />
+                      <span className="inline-flex size-[1em] items-center justify-center overflow-hidden rounded-xl align-middle">
+                        {s.icon?.url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={s.icon.url} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <Award className="size-[0.8em] text-white/85" strokeWidth={1.6} aria-hidden />
+                        )}
+                      </span>
                     )}
-                  </div>
-                  <span className="text-sm font-medium text-muted">{item.label}</span>
-                </Rise>
-              ))}
-            </div>
-          </div>
-        </Rise>
+                  </p>
+                  <p className="mt-2 break-words font-heading text-[13px] text-white/60 sm:text-[14px] md:mt-3 md:text-[17px]">
+                    {s.label}
+                  </p>
+                </div>
+              </ScrollReveal>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

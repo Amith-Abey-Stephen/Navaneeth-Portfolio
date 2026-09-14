@@ -1,30 +1,33 @@
-import type { Section, SiteContent } from "@/lib/types";
-import { renderableSections } from "@/lib/types";
-import { AboutSection } from "./AboutSection";
+import type { Section, SectionType, SiteContent } from "@/lib/types";
+import { renderableSections, SECTION_LABELS } from "@/lib/types";
+import { Navbar, type NavCta, type NavLink } from "@/components/Navbar";
+import { Hero } from "@/components/Hero";
+import { AboutIntro } from "@/components/AboutIntro";
+import { Projects } from "@/components/Projects";
+import { Contact } from "@/components/Contact";
+import { Footer } from "@/components/Footer";
+import { SiteCanvas } from "@/components/SiteCanvas";
+import { Preloader } from "@/components/Preloader";
+import { CursorTrail } from "@/components/CursorTrail";
+import type { StripItem } from "@/components/LogoStrip";
+import { StatsSection } from "./StatsSection";
+import { ExperienceSection } from "./ExperienceSection";
+import { ToolsSection } from "./ToolsSection";
+import { SkillsSection } from "./SkillsSection";
 import { CertificationsSection } from "./CertificationsSection";
 import { EducationSection } from "./EducationSection";
-import { ExperienceSection } from "./ExperienceSection";
-import { HeroSection } from "./HeroSection";
-import { CustomCursor } from "./motion/CustomCursor";
-import { GlassBackdrop } from "./motion/GlassBackdrop";
-import { MotionProvider } from "./motion/MotionProvider";
-import { ProjectsSection } from "./ProjectsSection";
-import { SiteFooter } from "./SiteFooter";
-import { SiteNav } from "./SiteNav";
-import { SkillsSection } from "./SkillsSection";
-import { StatsSection } from "./StatsSection";
-import { ToolsSection } from "./ToolsSection";
+import { SiteProviders } from "./SiteProviders";
 
 function renderSection(section: Section) {
   switch (section.type) {
     case "about":
-      return <AboutSection key="about" data={section.data} />;
+      return <AboutIntro key="about" data={section.data} />;
     case "stats":
       return <StatsSection key="stats" items={section.items} />;
     case "experience":
       return <ExperienceSection key="experience" items={section.items} />;
     case "projects":
-      return <ProjectsSection key="projects" items={section.items} />;
+      return <Projects key="projects" items={section.items} />;
     case "tools":
       return <ToolsSection key="tools" items={section.items} />;
     case "skills":
@@ -36,42 +39,88 @@ function renderSection(section: Section) {
   }
 }
 
+// The pill nav holds five links like the reference (Home · three sections ·
+// Contact). Which three: the first present in this priority, shown in page order.
+const NAV_PRIORITY: SectionType[] = [
+  "projects",
+  "experience",
+  "skills",
+  "about",
+  "tools",
+  "certifications",
+  "education",
+  "stats",
+];
+
 /**
- * The one and only render path for the site. The public page feeds it `published`
- * content; the studio's live preview feeds it `draft`. There is no second path.
+ * The one and only render path for the site. The public page feeds it
+ * `published` content; the studio's live preview feeds it `draft`.
+ * There is no second implementation that could drift.
  */
-export function PublicSite({ content }: { content: SiteContent }) {
+export function PublicSite({
+  content,
+  preloader = true,
+}: {
+  content: SiteContent;
+  preloader?: boolean;
+}) {
+  const { hero, contact } = content;
   const sections = renderableSections(content);
-  const workAnchor = ["projects", "experience"]
-    .map((t) => sections.find((s) => s.type === t))
-    .filter(Boolean)
-    .map((s) => `#${s!.type}`)[0];
+  const present = new Set(sections.map((s) => s.type));
+
+  const middle = NAV_PRIORITY.filter((t) => present.has(t)).slice(0, 3);
+  const links: NavLink[] = [
+    { id: "hero", href: "#hero", label: "Home" },
+    ...sections
+      .filter((s) => middle.includes(s.type))
+      .map((s) => ({
+        id: s.type,
+        href: `#${s.type}`,
+        label: s.type === "projects" ? "Work" : SECTION_LABELS[s.type],
+      })),
+    { id: "contact", href: "#contact", label: "Contact" },
+  ];
+  const cta: NavCta = contact.resumeUrl
+    ? { href: contact.resumeUrl, label: "Download Resume", external: true }
+    : { href: `mailto:${contact.email}`, label: "Email me" };
+  const brand = hero.name.trim().split(/\s+/)[0] || hero.name;
+
+  // The hero's running banner: the companies from Experience (deduplicated).
+  const strip: StripItem[] = [];
+  const experience = sections.find((s) => s.type === "experience");
+  if (experience && experience.type === "experience") {
+    const seen = new Set<string>();
+    for (const e of experience.items) {
+      const key = e.company.trim().toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      strip.push({ label: e.company.trim(), src: e.logo?.url || undefined });
+    }
+  }
 
   return (
-    <MotionProvider>
-      <div className="theme-glass min-h-screen bg-bg text-ink">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[95] focus:rounded-[12px] focus:bg-ink focus:px-4 focus:py-2.5 focus:text-sm focus:font-medium focus:text-bg"
-        >
-          Skip to content
-        </a>
-        <CustomCursor />
-        <GlassBackdrop />
-        {/* Content sits above the fixed light scene so backdrop blur can sample it. */}
-        <div className="relative z-10">
-          <SiteNav content={content} />
+    <SiteProviders>
+      {preloader && <Preloader name={hero.name} subtitle={hero.tagline} />}
+      <CursorTrail />
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[95] focus:rounded-full focus:bg-[#f2eee7] focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-black"
+      >
+        Skip to content
+      </a>
+      <div className="relative min-h-screen bg-[#070708] text-white">
+        {/* single continuous background canvas — all sections sit transparent over it */}
+        <SiteCanvas />
+        <div className="relative">
+          <Navbar links={links} brand={brand} cta={cta} />
           <main id="main">
-            <HeroSection hero={content.hero} contact={content.contact} workAnchor={workAnchor} />
+            <Hero hero={hero} contact={contact} strip={strip} />
             {sections.map(renderSection)}
+            <Contact contact={contact} />
           </main>
-          <SiteFooter contact={content.contact} name={content.hero.name} />
+          <Footer name={hero.name} contact={contact} />
         </div>
-        {/* Without JS, motion never hydrates — force any inline hidden states visible. */}
-        <noscript>
-          <style>{`[style]{opacity:1!important;transform:none!important;filter:none!important}`}</style>
-        </noscript>
       </div>
-    </MotionProvider>
+    </SiteProviders>
   );
 }

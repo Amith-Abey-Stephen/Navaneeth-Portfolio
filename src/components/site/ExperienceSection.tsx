@@ -1,158 +1,136 @@
 "use client";
 
-import type { ExperienceItem } from "@/lib/types";
-import { motion, useScroll, useSpring } from "motion/react";
 import { useRef } from "react";
-import { EASE, Rise } from "./motion/primitives";
-import { formatRange, Pill, RatioImage, SectionShell } from "./shared";
+import { motion } from "motion/react";
+import type { ExperienceItem } from "@/lib/types";
+import { formatRange, initials, pad2 } from "@/lib/format";
+import { JourneyLine } from "@/components/Journey";
+import { GridLines } from "@/components/ui";
+import { GhostTitle } from "./GhostTitle";
 
-/** A gold period on the rail that pops (with one soft ring) as the rail reaches it. */
-function TimelineNode() {
-  return (
-    <span aria-hidden className="absolute top-9 -left-[36px] flex h-2 w-2">
-      <motion.span
-        className="absolute inset-0 rounded-full bg-accent"
-        initial={{ scale: 0.25, opacity: 0 }}
-        whileInView={{ scale: 1, opacity: 1 }}
-        viewport={{ once: true, margin: "0px 0px -30% 0px" }}
-        transition={{ duration: 0.35, ease: EASE }}
-      />
-      <motion.span
-        className="absolute -inset-1.5 rounded-full border border-accent"
-        initial={{ scale: 0.4, opacity: 0 }}
-        whileInView={{ scale: 1.8, opacity: [0, 0.5, 0] }}
-        viewport={{ once: true, margin: "0px 0px -30% 0px" }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-      />
-    </span>
-  );
-}
-
-function TimelineCard({ item }: { item: ExperienceItem }) {
-  return (
-    <div className="relative">
-      <TimelineNode />
-      <Rise>
-        <article className="glass group p-6 transition-colors duration-200 hover:!border-[rgb(243_233_216_/_0.28)] md:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-            <div className="flex min-w-0 items-center gap-4">
-              <RatioImage
-                image={item.logo}
-                alt=""
-                fallbackText={item.company}
-                className="h-12 w-12 shrink-0 rounded-xl border border-line"
-              />
-              <div className="min-w-0">
-                <h3 className="text-lg font-semibold tracking-tight break-words">{item.role}</h3>
-                <p className="text-sm font-medium text-muted break-words">{item.company}</p>
-              </div>
-            </div>
-            <motion.span
-              className="utility glass-chip rounded-full px-3 py-1.5 whitespace-nowrap"
-              initial={{ opacity: 0, x: 8 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "0px 0px -60px 0px" }}
-              transition={{ duration: 0.4, ease: EASE, delay: 0.15 }}
-            >
-              {formatRange(item.startDate, item.endDate)}
-            </motion.span>
-          </div>
-
-          {/* Outcome leads; bullets are the evidence. The gold rule draws first.
-              The visible panel observes; the zero-scale rule only follows variants. */}
-          {item.highlight && (
-            <motion.div
-              className="relative mt-6 overflow-hidden rounded-2xl bg-accent-soft px-5 py-4"
-              initial="hide"
-              whileInView="show"
-              viewport={{ once: true, margin: "0px 0px -60px 0px" }}
-            >
-              <motion.span
-                aria-hidden
-                className="absolute top-0 bottom-0 left-0 w-0.5 origin-top bg-accent"
-                variants={{
-                  hide: { scaleY: 0 },
-                  show: { scaleY: 1, transition: { duration: 0.45, ease: EASE, delay: 0.1 } },
-                }}
-              />
-              <motion.div
-                variants={{
-                  hide: { opacity: 0 },
-                  show: { opacity: 1, transition: { duration: 0.4, delay: 0.25 } },
-                }}
-              >
-                <p className="utility !text-accent-ink/80">Key outcome</p>
-                <p className="mt-1.5 text-[15px] leading-relaxed font-medium text-accent-ink break-words">
-                  {item.highlight}
-                </p>
-              </motion.div>
-            </motion.div>
-          )}
-
-          {item.bullets.length > 0 && (
-            <motion.ul
-              className="mt-6 space-y-3"
-              initial="hide"
-              whileInView="show"
-              viewport={{ once: true, margin: "0px 0px -60px 0px" }}
-              variants={{ show: { transition: { staggerChildren: 0.05, delayChildren: 0.2 } } }}
-            >
-              {item.bullets.map((b, i) => (
-                <motion.li
-                  key={i}
-                  className="flex gap-3 text-[15px] leading-relaxed text-ink-soft/90"
-                  variants={{
-                    hide: { opacity: 0, y: 10 },
-                    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } },
-                  }}
-                >
-                  <span aria-hidden className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-                  <span className="min-w-0 break-words">{b}</span>
-                </motion.li>
-              ))}
-            </motion.ul>
-          )}
-
-          {item.tags && item.tags.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {item.tags.map((t, i) => (
-                <Pill key={i}>{t}</Pill>
-              ))}
-            </div>
-          )}
-        </article>
-      </Rise>
-    </div>
-  );
-}
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 /**
- * The timeline draws itself: a gold rail fills top-to-bottom with scroll, and
- * each role's node pops as the drawn edge passes it. History rests lit.
+ * Experience as the reference's "journey" list: hairline-divided rows, a big
+ * role title with a superscript index on the left, the story on the right,
+ * hashtag tags, and the aurora line drawing itself behind as you scroll.
  */
 export function ExperienceSection({ items }: { items: ExperienceItem[] }) {
-  const railRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: railRef,
-    offset: ["start 0.72", "end 0.72"],
-  });
-  const scaleY = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.6 });
+  const sectionRef = useRef<HTMLElement>(null);
 
   return (
-    <SectionShell id="experience" eyebrow="Experience" heading="Where I've worked">
-      <div ref={railRef} className="relative pl-10">
-        <span aria-hidden className="absolute top-2 bottom-2 left-[7px] w-px bg-line" />
-        <motion.span
-          aria-hidden
-          className="absolute top-2 bottom-2 left-[7px] w-px origin-top bg-accent"
-          style={{ scaleY }}
-        />
-        <div className="space-y-6">
-          {items.map((item) => (
-            <TimelineCard key={item.id} item={item} />
-          ))}
-        </div>
+    <section
+      id="experience"
+      ref={sectionRef}
+      className="relative scroll-mt-24 overflow-hidden bg-transparent px-5 pb-10 pt-6 sm:px-6 md:px-12 md:pt-10"
+    >
+      <GridLines />
+      <JourneyLine target={sectionRef} />
+      <div className="relative z-[2]">
+        <GhostTitle>Experience</GhostTitle>
       </div>
-    </SectionShell>
+
+      <div className="relative z-[2] mx-auto mt-4 max-w-[1440px] md:mt-8">
+        {items.map((e, i) => {
+          const bullets = e.bullets.filter((b) => b.trim());
+          const tags = (e.tags ?? []).filter((t) => t.trim());
+          return (
+            <article
+              key={e.id}
+              className="group grid grid-cols-1 gap-4 border-b border-white/20 py-7 first:border-t sm:py-8 md:py-10 lg:grid-cols-2 lg:gap-12"
+            >
+              <div className="min-w-0">
+                <motion.h3
+                  initial={{ opacity: 0, y: 56, filter: "blur(6px)" }}
+                  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.9, ease: EASE }}
+                  className="text-balance break-words font-heading text-[26px] leading-tight tracking-tight text-white transition-transform duration-500 sm:text-[30px] md:text-[42px] lg:group-hover:translate-x-2"
+                >
+                  {e.role}
+                  <sup className="ml-2 align-super text-[12px] font-normal text-white/50">
+                    {pad2(i + 1)}
+                  </sup>
+                </motion.h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.8, delay: 0.06, ease: EASE }}
+                  className="mt-5 inline-flex max-w-full flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-black px-4 py-3 text-[14px] text-white/80 sm:text-[15px] md:px-5"
+                >
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <span className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-md bg-white/10 font-heading text-[11px] font-semibold text-white/80">
+                      {e.logo?.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={e.logo.url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        initials(e.company, 1)
+                      )}
+                    </span>
+                    <span className="truncate font-medium text-white">
+                      {e.company}
+                    </span>
+                  </span>
+                  <span
+                    aria-hidden
+                    className="hidden h-1 w-1 rounded-full bg-white/25 sm:block"
+                  />
+                  <span className="tabular-nums text-white/60">
+                    {formatRange(e.startDate, e.endDate)}
+                  </span>
+                </motion.div>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 48, filter: "blur(6px)" }}
+                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.9, delay: 0.08, ease: EASE }}
+                className="min-w-0"
+              >
+                {bullets.length > 0 && (
+                  <ul className="space-y-3">
+                    {bullets.map((b, bi) => (
+                      <li
+                        key={bi}
+                        className="flex gap-3 break-words font-heading text-[15px] font-light leading-[1.65] text-white/80 md:text-[17px]"
+                      >
+                        <span
+                          aria-hidden
+                          className="mt-[0.75em] h-1 w-1 shrink-0 rounded-full bg-white/40"
+                        />
+                        <span className="min-w-0">{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {e.highlight && (
+                  <p className="relative mt-5 break-words pl-4 font-heading text-[15px] font-medium leading-snug text-white before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:rounded-full before:bg-gradient-to-b before:from-[#34ffb5] before:via-[#a855f7] before:to-[#ffb03a] md:text-[18px]">
+                    {e.highlight}
+                  </p>
+                )}
+                {tags.length > 0 && (
+                  <p className="mt-4 flex flex-wrap gap-x-2 gap-y-2 font-heading text-[14px] text-white/60 md:text-[16px]">
+                    {tags.map((t) => (
+                      <span
+                        key={t}
+                        className="break-words border-l border-white/25 pl-3 first:border-l-0 first:pl-0"
+                      >
+                        # {t}
+                      </span>
+                    ))}
+                  </p>
+                )}
+              </motion.div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }

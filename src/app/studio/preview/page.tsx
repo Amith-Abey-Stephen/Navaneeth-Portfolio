@@ -1,25 +1,21 @@
 "use client";
 
-import { CaseStudyView } from "@/components/site/CaseStudyView";
+import { useEffect, useState } from "react";
 import { PublicSite } from "@/components/site/PublicSite";
 import type { SiteContent } from "@/lib/types";
-import { useEffect, useState } from "react";
 
 /**
  * Blank shell loaded inside the studio's preview iframe. It renders the exact
- * same components as the live site — the home page or a draft case study —
- * fed the draft content via postMessage.
+ * same PublicSite component as the live page, fed the draft via postMessage.
  */
 export default function StudioPreviewPage() {
   const [content, setContent] = useState<SiteContent | null>(null);
-  const [view, setView] = useState("home");
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return;
       if (e.data?.type === "studio-preview-draft" && e.data.content) {
         setContent(e.data.content as SiteContent);
-        setView(typeof e.data.view === "string" ? e.data.view : "home");
       }
     }
     window.addEventListener("message", onMessage);
@@ -29,21 +25,11 @@ export default function StudioPreviewPage() {
 
   if (!content) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg text-sm text-muted">
+      <div className="flex min-h-screen items-center justify-center bg-[#070708] font-heading text-[13px] uppercase tracking-[0.2em] text-white/40">
         Loading preview…
       </div>
     );
   }
 
-  if (view.startsWith("case:")) {
-    const id = view.slice(5);
-    const section = content.sections.find((s) => s.type === "projects");
-    const project =
-      section && section.type === "projects" ? section.items.find((p) => p.id === id) : undefined;
-    if (project?.caseStudy?.blocks?.length) {
-      return <CaseStudyView project={project} content={content} />;
-    }
-  }
-
-  return <PublicSite content={content} />;
+  return <PublicSite content={content} preloader={false} />;
 }

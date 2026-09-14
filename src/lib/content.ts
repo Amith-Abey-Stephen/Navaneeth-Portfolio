@@ -4,7 +4,7 @@ import { getSupabase } from "./supabase";
 import type { HistoryEntry, SiteContent, SiteDocument } from "./types";
 
 // The whole site lives in one row of the `site` table (id = 'main'):
-// draft/published/history as jsonb, plus version and published_at.
+// draft / published / history as jsonb, plus version and published_at.
 // Single owner-editor, so read-then-update is safe: each update is one
 // atomic statement and nothing else writes concurrently.
 
@@ -67,7 +67,7 @@ export async function loadOrSeedSite(): Promise<SiteDocument> {
   return fresh;
 }
 
-/** Autosave target — studio edits only ever touch `draft`. */
+/** Autosave target — studio edits only ever touch `draft`, never `published`. */
 export async function saveDraft(draft: SiteContent): Promise<void> {
   const { error } = await getSupabase()
     .from("site")
@@ -79,8 +79,8 @@ export async function saveDraft(draft: SiteContent): Promise<void> {
 export type PublishResult = { version: number; publishedAt: string };
 
 /**
- * Publish — spec §4.3: append current published to history (keep 20), copy
- * draft→published, bump version, stamp publishedAt.
+ * Publish — build prompt §20: append current published to history (keep 20),
+ * copy draft → published, bump version, stamp publishedAt.
  */
 export async function publishDraft(draft: SiteContent): Promise<PublishResult> {
   const row = await fetchRow();
@@ -116,8 +116,9 @@ export async function publishDraft(draft: SiteContent): Promise<PublishResult> {
 }
 
 /**
- * Restore — spec §4.3: append the version being replaced to history first, then
- * the chosen entry's content becomes both published and draft. Nothing is lost.
+ * Restore — build prompt §20: append the version being replaced to history
+ * first, then the chosen entry's content becomes both published and draft.
+ * Nothing is silently destroyed.
  */
 export async function restoreVersion(entry: HistoryEntry): Promise<SiteDocument> {
   const row = await fetchRow();

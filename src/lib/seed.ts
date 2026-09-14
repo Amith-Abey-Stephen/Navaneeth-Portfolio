@@ -1,6 +1,6 @@
 import type { SiteContent } from "./types";
 
-// Navaneeth's real content — spec section 11. Placeholder assets/URLs are left as
+// Navaneeth's real content — build prompt §7–§16. Placeholder assets/URLs are left as
 // empty strings or omitted (never invented); components render graceful fallbacks.
 
 export const SEED_CONTENT: SiteContent = {

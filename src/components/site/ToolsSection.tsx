@@ -1,72 +1,61 @@
 "use client";
 
 import type { ProficiencyLevel, ToolItem } from "@/lib/types";
-import { motion } from "motion/react";
-import { EASE } from "./motion/primitives";
-import { RatioImage, SectionShell } from "./shared";
+import { initials } from "@/lib/format";
+import { GridLines, ScrollReveal } from "@/components/ui";
+import { GhostTitle } from "./GhostTitle";
 
-const LEVEL_DOTS: Record<ProficiencyLevel, number> = {
-  Beginner: 1,
-  Intermediate: 2,
-  Expert: 3,
+// Proficiency in the reference's own chip vocabulary: the cream active chip
+// for Expert, the frosted chip for Intermediate, an outline for Beginner.
+const LEVEL_CHIP: Record<ProficiencyLevel, string> = {
+  Expert: "bg-[#e9e1d3] text-[#2a2018]",
+  Intermediate: "bg-white/10 text-white/85",
+  Beginner: "border border-white/15 text-white/60",
 };
 
-/** Filled dots pop in sequence after the tile lands — animated proficiency. */
-function LevelDots({ level, baseDelay }: { level: ProficiencyLevel; baseDelay: number }) {
-  const filled = LEVEL_DOTS[level];
-  return (
-    <span className="flex items-center gap-1" aria-hidden>
-      {[1, 2, 3].map((n) =>
-        n <= filled ? (
-          <motion.span
-            key={n}
-            className="h-1.5 w-1.5 rounded-full bg-accent"
-            initial={{ scale: 0.5, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3, ease: EASE, delay: baseDelay + 0.2 + n * 0.12 }}
-          />
-        ) : (
-          <span key={n} className="h-1.5 w-1.5 rounded-full bg-line" />
-        ),
-      )}
-    </span>
-  );
-}
-
+/**
+ * Tools as the reference's bordered cell grid (the social strip): 2-up on
+ * mobile, 4-up from md, hairline dividers that stay correct for any count.
+ */
 export function ToolsSection({ items }: { items: ToolItem[] }) {
   return (
-    <SectionShell id="tools" eyebrow="Tools" heading="What I work with">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {items.map((tool, i) => {
-          // Diagonal wave: delay grows across rows and columns together.
-          const delay = ((i % 4) + Math.floor(i / 4)) * 0.055;
-          return (
-            <motion.div
-              key={tool.id}
-              className="glass-lite flex items-center gap-3.5 p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:!border-[rgb(243_233_216_/_0.26)]"
-              initial={{ opacity: 0, y: 14, scale: 0.96 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: "0px 0px -40px 0px" }}
-              transition={{ duration: 0.45, ease: EASE, delay }}
-            >
-              <RatioImage
-                image={tool.icon}
-                alt=""
-                fallbackText={tool.name}
-                className="h-10 w-10 shrink-0 rounded-xl border border-line"
-              />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{tool.name}</p>
-                <p className="mt-1 flex items-center gap-2 text-xs text-muted">
-                  <LevelDots level={tool.level} baseDelay={delay} />
-                  {tool.level}
-                </p>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-    </SectionShell>
+    <section
+      id="tools"
+      className="relative scroll-mt-24 overflow-hidden bg-transparent px-5 pb-16 pt-6 sm:px-6 md:px-12 md:pb-24 md:pt-10"
+    >
+      <GridLines />
+      <GhostTitle>Tools</GhostTitle>
+      <ScrollReveal className="relative mx-auto mt-2 max-w-[1240px] md:mt-6">
+        <div className="overflow-hidden rounded-2xl border border-white/10">
+          <ul className="-mb-px -mr-px grid grid-cols-2 md:grid-cols-4">
+            {items.map((t) => (
+              <li
+                key={t.id}
+                className="flex min-w-0 items-center gap-3 border-b border-r border-white/10 px-4 py-4 transition-colors hover:bg-white/[0.06] sm:px-5 md:py-5"
+              >
+                <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg border border-white/10 bg-white/[0.06] font-heading text-[13px] font-semibold text-white/80">
+                  {t.icon.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={t.icon.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  ) : (
+                    initials(t.name, 1)
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-heading text-[15px] font-medium text-white sm:text-[16px]">
+                    {t.name}
+                  </span>
+                  <span
+                    className={`mt-1.5 inline-block rounded-md px-2 py-0.5 font-heading text-[11px] font-medium leading-[1.4] ${LEVEL_CHIP[t.level]}`}
+                  >
+                    {t.level}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </ScrollReveal>
+    </section>
   );
 }

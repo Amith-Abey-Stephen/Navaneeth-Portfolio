@@ -46,7 +46,7 @@ import {
   ToolsForm,
 } from "./sectionForms";
 
-type Screen = "overview" | "sections" | "history" | "hero" | "contact" | SectionType;
+type Screen = "overview" | "sections" | "preview" | "history" | "hero" | "contact" | SectionType;
 
 const NAV: { key: Screen; label: string; Icon: typeof Home }[] = [
   { key: "overview", label: "Overview", Icon: Home },
@@ -57,16 +57,18 @@ const NAV: { key: Screen; label: string; Icon: typeof Home }[] = [
   { key: "experience", label: "Experience", Icon: Briefcase },
   { key: "projects", label: "Projects", Icon: FolderOpen },
   { key: "tools", label: "Tools", Icon: Wrench },
-  { key: "skills", label: "Core skills", Icon: Sparkles },
+  { key: "skills", label: "Skills", Icon: Sparkles },
   { key: "certifications", label: "Certifications", Icon: Award },
   { key: "education", label: "Education", Icon: GraduationCap },
   { key: "contact", label: "Contact", Icon: Mail },
+  { key: "preview", label: "Preview", Icon: Eye },
   { key: "history", label: "History", Icon: HistoryIcon },
 ];
 
 const SCREEN_TITLES: Record<Screen, string> = {
   overview: "Overview",
   sections: "Sections",
+  preview: "Preview",
   history: "Version history",
   hero: "Hero",
   contact: "Contact",
@@ -75,7 +77,7 @@ const SCREEN_TITLES: Record<Screen, string> = {
 
 function Splash({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-5">
+    <div className="theme-studio flex min-h-screen items-center justify-center bg-bg px-5 text-ink">
       <div className="card w-full max-w-md p-8 text-center">{children}</div>
     </div>
   );
@@ -322,6 +324,7 @@ export function StudioApp() {
           <BrandMark />
         </div>
         <h1 className="mt-4 text-xl font-semibold">Content studio</h1>
+        <p className="mt-1 text-xs text-muted">Private — for the site owner only.</p>
         {authStep === "email" ? (
           <form onSubmit={handleSendCode}>
             <p className="mt-2 text-sm text-muted">
@@ -460,6 +463,12 @@ export function StudioApp() {
             onChange={(sections) => setDraft((d) => (d ? { ...d, sections } : d))}
           />
         );
+      case "preview":
+        return (
+          <div className="h-[calc(100vh-9rem)] min-h-[480px]">
+            <Preview draft={draft!} />
+          </div>
+        );
       case "history":
         return (
           <HistoryView
@@ -523,7 +532,7 @@ export function StudioApp() {
   }
 
   return (
-    <div className="flex min-h-screen bg-bg text-ink">
+    <div className="theme-studio flex min-h-screen bg-bg text-ink">
       {/* Sidebar */}
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-3 py-5 md:flex">
         <div className="flex items-center gap-2.5 px-2">
@@ -629,9 +638,11 @@ export function StudioApp() {
 
         <div className="flex min-h-0 flex-1">
           <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
-            <div className="mx-auto max-w-2xl pb-24">{renderScreen()}</div>
+            <div className={screen === "preview" ? "mx-auto max-w-5xl" : "mx-auto max-w-2xl pb-24"}>
+              {renderScreen()}
+            </div>
           </main>
-          {showPreview && (
+          {showPreview && screen !== "preview" && (
             <aside className="hidden w-[46%] shrink-0 border-l border-line p-4 lg:block xl:w-[42%]">
               <div className="sticky top-20 h-[calc(100vh-6.5rem)]">
                 <Preview draft={draft} />

@@ -1,64 +1,43 @@
-# Navaneeth — Portfolio + Content Studio
+# Navaneeth C L — portfolio + content studio
 
-A Next.js portfolio with a private, no-code content studio at `/studio`, backed by Supabase.
-Built from `docs/navaneeth-portfolio-build-spec.md` (structure & behavior) and the brand canvas
-in `docs/ui.png` / `docs/Portfolio_Master_Build_and_Brand_Specification.md` (design). Design
-tokens are documented in `docs/DESIGN_NOTES.md`.
+Next.js 16 site built on the cloned "portfolio-v4" design (Inter Tight, single
+continuous background canvas, ghost section titles, laptop-mock project cards,
+pill nav, rainbow cursor trail, Lenis smooth scroll) with a private, structured
+Content Studio at `/studio` so the owner edits content without touching code.
 
-## Run it
+## Run
 
 ```bash
 npm install
-npm run dev
+npm run dev     # http://localhost:3000
+npm run build && npm start
 ```
 
-Open http://localhost:3000. Before Supabase is connected the public site renders from the
-built-in seed content and `/studio` shows a setup notice — nothing is broken, it's just offline.
+## Backend (Supabase)
 
-## Connect Supabase (one-time)
+1. Create a Supabase project and run `supabase/setup.sql` once in the SQL editor
+   (creates the single-row `site` table, the `images` bucket, and the
+   owner-only row-level policies).
+2. Copy `.env.example` to `.env.local` and fill in the project URL, anon key,
+   and the comma-separated owner emails. The email list must match
+   `owner_emails()` in `supabase/setup.sql` — the database is the real gate.
+3. Studio sign-in is a Supabase magic link (email OTP). Only allowlisted
+   emails get in; any other account is rejected.
 
-1. Create a project at supabase.com (free tier is plenty).
-2. **SQL Editor** → New query → paste the whole of `supabase/setup.sql` → Run. This creates
-   the `site` table, the `images` bucket, and every access policy in one go.
-3. Project Settings → **API** → copy the Project URL and the `anon` public key into
-   `.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
-4. Restart `npm run dev`.
+Without Supabase keys the public site renders the built-in seed content and
+the studio shows a setup notice.
 
-Sign-in is an emailed 6-digit code — no OAuth setup needed. First sign-in at `/studio` with
-an allowlisted email seeds the database with the real content from the spec — both `draft`
-and `published`.
+## How content flows
 
-Studio access is an email allowlist (comma-separated) living in two places on purpose:
-`NEXT_PUBLIC_OWNER_EMAILS` in `.env.local` (client gate) and `owner_emails()` in
-`supabase/setup.sql` (the real enforcement — re-run the script after editing). Change both
-together.
+- `src/lib/types.ts` — the content schema (hero, contact, ordered sections).
+- `src/lib/limits.ts` — character and item caps enforced in the studio forms.
+- `src/lib/seed.ts` — the real starting content.
+- `src/lib/content.ts` — draft autosave, publish (history of 20), restore.
+- `src/lib/published.ts` — server-side read of `published` for the home page.
+- `src/components/site/PublicSite.tsx` — the one render path. `/` feeds it
+  the published content; the studio preview iframe (`/studio/preview`) feeds
+  it the draft over `postMessage`. There is no second implementation.
 
-Note: Supabase's built-in email service is rate-limited (a handful of codes per hour).
-Sessions persist, so sign-ins are rare; if it ever matters, plug custom SMTP into
-Supabase Auth settings.
-
-## How it works
-
-- **One render path.** `src/components/site/PublicSite.tsx` renders the whole site. The public
-  page feeds it `published` content; the studio preview iframe feeds it `draft`. There is no
-  second layout to drift.
-- **One row.** The `site` table's single row (`id = 'main'`) holds `draft`, `published`,
-  `version`, `published_at`, and up to 20 `history` entries. Studio edits autosave to `draft`;
-  Publish copies draft → published and pushes the old version into history; Restore brings any
-  history entry back (recording what it replaced first).
-- **Layout can't break.** Field lengths and list sizes are capped in the forms
-  (`src/lib/limits.ts`), every image is force-cropped to its declared aspect ratio before
-  upload, empty sections/verticals simply don't render, and components clamp/wrap defensively.
-- **Case studies.** A project can carry an on-site case study (Problem → Impact story
-  blocks with metrics and images), edited in the studio and served at
-  `/case-study/[projectId]`. With at least one block, the project card's "Read case
-  study" links there; otherwise it uses the external URL.
-
-Note: because the spec keeps everything in a single public-readable row, draft content is
-technically fetchable before it's published (the site never displays it). If that ever matters,
-move `draft` behind an owner-only policy via a column-split or a view.
-
-## Deploy
-
-Deploy to Vercel (repo → vercel.com → add the same env vars). The public page is rendered
-per-request, so a publish shows up on the next refresh.
+Section components live in `src/components` (the adapted clone components)
+and `src/components/site` (sections composed from the clone's primitives).
+The studio lives in `src/components/studio`.

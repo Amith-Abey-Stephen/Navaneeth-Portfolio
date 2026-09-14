@@ -14,15 +14,23 @@ const RATIO_CLASS: Record<AspectRatio, string> = {
   "4:3": "aspect-[4/3] w-40",
 };
 
-async function cropToBlob(src: string, area: Area): Promise<Blob> {
+// 1:1 fields are icons, logos and badges — PNG keeps their transparency.
+// Wide covers are photos/screens — JPEG keeps them light.
+function outputFor(ratio: AspectRatio): { type: string; ext: string; maxW: number; quality?: number } {
+  return ratio === "1:1"
+    ? { type: "image/png", ext: "png", maxW: 1024 }
+    : { type: "image/jpeg", ext: "jpg", maxW: 1600, quality: 0.9 };
+}
+
+async function cropToBlob(src: string, area: Area, ratio: AspectRatio): Promise<Blob> {
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const el = new Image();
     el.onload = () => resolve(el);
     el.onerror = reject;
     el.src = src;
   });
-  const maxW = 1600;
-  const scale = Math.min(1, maxW / area.width);
+  const out = outputFor(ratio);
+  const scale = Math.min(1, out.maxW / area.width);
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(area.width * scale);
   canvas.height = Math.round(area.height * scale);
@@ -30,7 +38,7 @@ async function cropToBlob(src: string, area: Area): Promise<Blob> {
   if (!ctx) throw new Error("Canvas unavailable");
   ctx.drawImage(img, area.x, area.y, area.width, area.height, 0, 0, canvas.width, canvas.height);
   return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Crop failed"))), "image/jpeg", 0.9),
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Crop failed"))), out.type, out.quality),
   );
 }
 
@@ -75,22 +83,25 @@ export function ImageField({
     setSrc(URL.createObjectURL(file));
   }
 
+  function closeCropper() {
+    if (src) URL.revokeObjectURL(src);
+    setSrc(null);
+  }
+
   async function confirmCrop() {
     if (!src || !area) return;
     setBusy(true);
     setError(null);
     try {
-      const blob = await cropToBlob(src, area);
-      const path = `${pathPrefix}-${Date.now()}.jpg`;
+      const blob = await cropToBlob(src, area, ratio);
+      const out = outputFor(ratio);
+      const path = `${pathPrefix}-${Date.now()}.${out.ext}`;
       const sb = getSupabase();
-      const { error } = await sb.storage
-        .from("images")
-        .upload(path, blob, { contentType: "image/jpeg" });
+      const { error } = await sb.storage.from("images").upload(path, blob, { contentType: out.type });
       if (error) throw error;
       const { data } = sb.storage.from("images").getPublicUrl(path);
       onChange({ url: data.publicUrl, aspectRatio: ratio });
-      URL.revokeObjectURL(src);
-      setSrc(null);
+      closeCropper();
     } catch {
       setError("Upload didn't go through. Try again.");
     } finally {
@@ -100,7 +111,7 @@ export function ImageField({
 
   return (
     <FieldShell label={label} hint={enabled ? `Cropped to ${ratio}` : "Connect Supabase to upload images."}>
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <div
           className={`${RATIO_CLASS[ratio]} flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-bg`}
         >
@@ -131,15 +142,28 @@ export function ImageField({
             </button>
           )}
         </div>
-        <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={pickFile} />
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          aria-label={`${label} file`}
+          onChange={pickFile}
+        />
       </div>
       {error && <p className="mt-2 text-xs text-danger">{error}</p>}
 
       {src && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Crop image to ${ratio}`}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4"
+        >
           <div className="card w-full max-w-xl !rounded-2xl p-5">
             <p className="text-sm font-semibold">Crop to {ratio}</p>
-            <div className="relative mt-4 h-80 overflow-hidden rounded-xl bg-ink">
+            <p className="mt-1 text-xs text-muted">Drag to position, zoom to fit. The saved image is exactly this frame.</p>
+            <div className="relative mt-4 h-72 overflow-hidden rounded-xl bg-ink sm:h-80">
               <Cropper
                 image={src}
                 crop={crop}
@@ -159,17 +183,14 @@ export function ImageField({
                 step={0.01}
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
-                className="w-full accent-[#b9854c]"
+                className="w-full accent-[#ff4a1a]"
               />
             </label>
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => {
-                  URL.revokeObjectURL(src);
-                  setSrc(null);
-                }}
+                onClick={closeCropper}
                 className="rounded-[12px] px-4 py-2 text-sm font-medium text-muted transition-colors duration-200 hover:text-ink"
               >
                 Cancel

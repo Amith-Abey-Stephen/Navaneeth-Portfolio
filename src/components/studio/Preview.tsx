@@ -12,56 +12,40 @@ const DEVICES = [
 
 type DeviceKey = (typeof DEVICES)[number]["key"];
 
+const PREVIEW_TYPE = "studio-preview-draft";
+
 /**
  * The preview is a real iframe at real device widths, so media queries behave
- * exactly as they will in production — it renders the same components as the
- * live site, fed the draft via postMessage. The view select switches between
- * the home page and any draft case study.
+ * exactly as they will in production — it renders the same PublicSite as the
+ * live page, fed the draft via postMessage.
  */
 export function Preview({ draft }: { draft: SiteContent }) {
   const [device, setDevice] = useState<DeviceKey>("desktop");
-  const [view, setView] = useState("home");
   const frameRef = useRef<HTMLIFrameElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
-  const draftRef = useRef(draft);
-  const viewRef = useRef(view);
+  const latest = useRef(draft);
   const [box, setBox] = useState({ w: 0, h: 0 });
 
-  draftRef.current = draft;
-  viewRef.current = view;
-
-  const projectsSection = draft.sections.find((s) => s.type === "projects");
-  const caseStudies =
-    projectsSection && projectsSection.type === "projects"
-      ? projectsSection.items.filter((p) => p.caseStudy?.blocks?.length)
-      : [];
-
-  // If the selected case study lost its blocks, fall back to home.
-  useEffect(() => {
-    if (view !== "home" && !caseStudies.some((p) => `case:${p.id}` === view)) {
-      setView("home");
-    }
-  }, [view, caseStudies]);
-
-  function send() {
+  function post(content: SiteContent) {
     frameRef.current?.contentWindow?.postMessage(
-      { type: "studio-preview-draft", content: draftRef.current, view: viewRef.current },
+      { type: PREVIEW_TYPE, content },
       window.location.origin,
     );
   }
 
   useEffect(() => {
+    latest.current = draft;
+    post(draft);
+  }, [draft]);
+
+  useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return;
-      if (e.data?.type === "studio-preview-ready") send();
+      if (e.data?.type === "studio-preview-ready") post(latest.current);
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, []);
-
-  useEffect(() => {
-    send();
-  }, [draft, view]);
 
   useEffect(() => {
     const el = boxRef.current;
@@ -79,49 +63,32 @@ export function Preview({ draft }: { draft: SiteContent }) {
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-2 pb-3">
         <span className="utility shrink-0">Live preview</span>
-        <div className="flex min-w-0 items-center gap-2">
-          {caseStudies.length > 0 && (
-            <select
-              aria-label="Preview page"
-              className="min-w-0 rounded-[12px] border border-line bg-surface px-2.5 py-1.5 text-xs font-medium"
-              value={view}
-              onChange={(e) => setView(e.target.value)}
+        <div className="flex shrink-0 rounded-[12px] border border-line bg-surface p-0.5">
+          {DEVICES.map(({ key, label, Icon }) => (
+            <button
+              key={key}
+              type="button"
+              aria-label={`Preview at ${label} width`}
+              aria-pressed={device === key}
+              onClick={() => setDevice(key)}
+              className={`rounded-[10px] px-3 py-1.5 transition-colors duration-200 ${
+                device === key ? "bg-ink text-white" : "text-muted hover:text-ink"
+              }`}
             >
-              <option value="home">Home</option>
-              {caseStudies.map((p) => (
-                <option key={p.id} value={`case:${p.id}`}>
-                  {p.title.trim().slice(0, 40) || "Untitled case study"}
-                </option>
-              ))}
-            </select>
-          )}
-          <div className="flex shrink-0 rounded-[12px] border border-line bg-surface p-0.5">
-            {DEVICES.map(({ key, label, Icon }) => (
-              <button
-                key={key}
-                type="button"
-                aria-label={`Preview at ${label} width`}
-                aria-pressed={device === key}
-                onClick={() => setDevice(key)}
-                className={`rounded-[10px] px-3 py-1.5 transition-colors duration-200 ${
-                  device === key ? "bg-ink text-white" : "text-muted hover:text-ink"
-                }`}
-              >
-                <Icon className="h-4 w-4" strokeWidth={2} />
-              </button>
-            ))}
-          </div>
+              <Icon className="h-4 w-4" strokeWidth={2} />
+            </button>
+          ))}
         </div>
       </div>
       <div
         ref={boxRef}
-        className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-line bg-surface"
+        className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-line bg-[#070708]"
       >
         <iframe
           ref={frameRef}
           src="/studio/preview"
           title="Draft preview"
-          onLoad={send}
+          onLoad={() => post(latest.current)}
           style={{
             width,
             height: frameHeight,
