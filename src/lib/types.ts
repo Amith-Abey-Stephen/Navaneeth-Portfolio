@@ -115,10 +115,21 @@ export type Section =
 
 export type SectionType = Section["type"];
 
+/**
+ * Site-level settings added in the V2 pass. Every field is optional so documents
+ * written before it existed keep loading unchanged; a missing `settings` means
+ * "use the defaults" (no custom favicon, marquee derived from Experience).
+ */
+export type SiteSettings = {
+  favicon?: ImageRef; // "1:1" — the browser-tab icon, follows draft → publish
+  marquee?: string[]; // company names for the running banner; undefined → derived from Experience
+};
+
 export type SiteContent = {
   hero: Hero;
   contact: ContactInfo;
   sections: Section[];
+  settings?: SiteSettings;
 };
 
 export type HistoryEntry = {

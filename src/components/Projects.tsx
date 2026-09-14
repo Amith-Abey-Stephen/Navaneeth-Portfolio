@@ -1,12 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useInView, useScroll, useTransform } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import type { ProjectItem, ProjectVertical } from "@/lib/types";
 import { PROJECT_VERTICALS } from "@/lib/types";
 import { pad2 } from "@/lib/format";
-import { GridLines } from "./ui";
+import { GridLines, useIsMobile, useReveal } from "./ui";
 
 function LaptopMock({
   p,
@@ -40,9 +40,9 @@ function LaptopMock({
       ) : (
         /* no cover yet — the screen carries the title as a text mock, like
            the reference laptops do, so the card never shows a broken image */
-        <div className="flex h-full w-full flex-col justify-end bg-[radial-gradient(120%_90%_at_20%_0%,rgba(255,74,26,0.28),transparent_60%),linear-gradient(160deg,#1a1a1f,#0b0b0e)] p-5 transition-transform duration-700 ease-out group-hover:scale-[1.04] sm:p-7">
+        <div className="flex h-full w-full flex-col justify-end bg-[radial-gradient(120%_90%_at_20%_0%,rgba(255,74,26,0.28),transparent_60%),linear-gradient(160deg,#1a1a1f,#0b0b0e)] p-5 transition-transform duration-700 ease-out group-hover:scale-[1.04] sm:p-6 lg:p-7">
           <p className="font-heading text-[11px] uppercase tracking-[0.18em] text-white/45">{p.vertical}</p>
-          <p className="mt-2 line-clamp-3 font-heading text-[clamp(18px,3.4vw,26px)] font-semibold leading-[1.15] text-white/90 md:text-[26px]">
+          <p className="mt-2 line-clamp-3 font-heading text-[clamp(18px,3.4vw,26px)] font-semibold leading-[1.15] text-white/90 md:text-[21px] lg:text-[26px]">
             {p.title}
           </p>
         </div>
@@ -54,7 +54,7 @@ function LaptopMock({
 
   return (
     <div
-      className="relative overflow-hidden bg-[#0c0c0e] px-5 pt-8 md:px-10 md:pt-10"
+      className="relative overflow-hidden bg-[#0c0c0e] px-4 pt-6 sm:px-5 sm:pt-8 md:px-6 md:pt-8 lg:px-10 lg:pt-10"
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
     >
@@ -92,7 +92,14 @@ function ProjectCard({ p, index }: { p: ProjectItem; index: number }) {
   const [previewHover, setPreviewHover] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const r = useReveal();
+  const mobile = useIsMobile();
+  // Cards sit in one column on phones, so the two-column stagger only applies from md.
   const row = Math.floor(index / 2);
+  const delay = mobile ? 0 : (index % 2) * 0.12 + row * 0.06;
+  const hidden = { opacity: 0, y: r.yBody + 16, scale: 0.96, filter: mobile ? "blur(6px)" : "blur(8px)" };
 
   // One primary action: the live product when it exists, else the case study.
   const primary = p.liveUrl
@@ -105,14 +112,10 @@ function ProjectCard({ p, index }: { p: ProjectItem; index: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 64, scale: 0.96, filter: "blur(8px)" }}
-      whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{
-        duration: 0.9,
-        delay: (index % 2) * 0.12 + row * 0.06,
-        ease: [0.16, 1, 0.3, 1],
-      }}
+      ref={ref}
+      initial={hidden}
+      animate={inView ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" } : hidden}
+      transition={{ duration: r.duration, delay, ease: r.ease }}
       className="min-w-0"
     >
       <article
@@ -159,7 +162,7 @@ function ProjectCard({ p, index }: { p: ProjectItem; index: number }) {
               target="_blank"
               rel="noreferrer"
               aria-label={`${primary.label}: ${p.title}`}
-              className="group/btn relative inline-flex min-h-[44px] shrink-0 items-center gap-1.5 overflow-visible rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-2.5 font-heading text-[13px] font-medium text-white transition-all duration-300 group-hover:border-white/35 group-hover:bg-white/[0.10] group-hover:shadow-[0_0_20px_-4px_rgba(255,255,255,0.25)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-4 sm:text-[14px]"
+              className="group/btn relative inline-flex min-h-[44px] shrink-0 items-center gap-1.5 overflow-visible rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-2.5 font-heading text-[13px] font-medium text-white transition-all duration-300 group-hover:border-white/35 group-hover:bg-white/[0.10] group-hover:shadow-[0_0_20px_-4px_rgba(255,255,255,0.25)] active:bg-white/[0.14] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-4 sm:text-[14px]"
               onMouseEnter={() => setBtnHover(true)}
               onMouseLeave={() => setBtnHover(false)}
             >
@@ -222,7 +225,7 @@ function ProjectCard({ p, index }: { p: ProjectItem; index: number }) {
                   href={secondaryCaseStudy}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded font-heading text-[13px] font-medium text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white md:text-[14px]"
+                  className="-my-3 inline-flex min-h-[44px] items-center gap-1 rounded font-heading text-[13px] font-medium text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white active:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white md:text-[14px]"
                 >
                   Read case study <ArrowUpRight size={14} aria-hidden />
                 </a>

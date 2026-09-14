@@ -15,7 +15,8 @@ const LEVEL_CHIP: Record<ProficiencyLevel, string> = {
 
 /**
  * Tools as the reference's bordered cell grid (the social strip): 2-up on
- * mobile, 4-up from md, hairline dividers that stay correct for any count.
+ * phones, 3-up on tablets, 4-up from lg; hairline dividers that stay correct
+ * for any count. Names wrap to a second line rather than truncating.
  */
 export function ToolsSection({ items }: { items: ToolItem[] }) {
   return (
@@ -27,11 +28,11 @@ export function ToolsSection({ items }: { items: ToolItem[] }) {
       <GhostTitle>Tools</GhostTitle>
       <ScrollReveal className="relative mx-auto mt-2 max-w-[1240px] md:mt-6">
         <div className="overflow-hidden rounded-2xl border border-white/10">
-          <ul className="-mb-px -mr-px grid grid-cols-2 md:grid-cols-4">
+          <ul className="-mb-px -mr-px grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
             {items.map((t) => (
               <li
                 key={t.id}
-                className="flex min-w-0 items-center gap-3 border-b border-r border-white/10 px-4 py-4 transition-colors hover:bg-white/[0.06] sm:px-5 md:py-5"
+                className="flex min-w-0 items-center gap-3 border-b border-r border-white/10 px-3.5 py-4 transition-colors hover:bg-white/[0.06] sm:px-5 md:py-5"
               >
                 <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg border border-white/10 bg-white/[0.06] font-heading text-[13px] font-semibold text-white/80">
                   {t.icon.url ? (
@@ -42,7 +43,7 @@ export function ToolsSection({ items }: { items: ToolItem[] }) {
                   )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-heading text-[15px] font-medium text-white sm:text-[16px]">
+                  <span className="line-clamp-2 break-words font-heading text-[15px] font-medium leading-snug text-white sm:text-[16px]">
                     {t.name}
                   </span>
                   <span

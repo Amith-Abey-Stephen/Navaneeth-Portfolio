@@ -5,8 +5,9 @@
  * over the hero image's lower fade — no box, no border, no band, not a
  * separate section. Rendered pinned to the hero bottom (see Hero.tsx) with
  * clearance above the CTAs, so the marquee can never cover the buttons.
- * Fed with the companies from the Experience section (name + optional 1:1
- * logo); short lists are repeated so the track always fills the viewport.
+ * Fed from lib/marquee (the studio's company list, or the Experience
+ * companies until one is set; optional 1:1 logo); short lists are repeated
+ * so the track always fills the viewport.
  */
 export type StripItem = { label: string; src?: string };
 
@@ -44,7 +45,7 @@ export function LogoStrip({ items }: { items: StripItem[] }) {
 
   return (
     <div className="relative z-10 bg-transparent">
-      <div className="marquee-paused relative flex overflow-hidden py-6 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+      <div className="marquee-paused relative flex overflow-hidden py-5 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] sm:py-6">
         <RowHalf items={track} />
         <RowHalf hidden items={track} />
       </div>

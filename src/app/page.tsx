@@ -8,11 +8,16 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const { content } = await getPublishedSite();
   const title = `${content.hero.name} — ${content.hero.tagline}`;
+  // The favicon is part of the published content, so a draft change in the
+  // studio never reaches the tab until the owner publishes. No upload yet →
+  // no icon tag at all (the browser's default), never an invented asset.
+  const favicon = content.settings?.favicon?.url;
   return {
     title,
     description: content.hero.shortBio,
     openGraph: { title, description: content.hero.shortBio, type: "profile" },
     twitter: { card: "summary", title, description: content.hero.shortBio },
+    ...(favicon ? { icons: { icon: [{ url: favicon }], apple: [{ url: favicon }] } } : {}),
   };
 }
 

@@ -13,7 +13,7 @@ export const SEED_CONTENT: SiteContent = {
   },
   contact: {
     email: "navaneethclpro@gmail.com",
-    phone: "+91 6282860929",
+    linkedinUrl: "https://www.linkedin.com/in/navaneethcl/",
   },
   sections: [
     {

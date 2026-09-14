@@ -25,6 +25,7 @@ import {
   Layers,
   LogOut,
   Mail,
+  Settings,
   Sparkles,
   User as UserIcon,
   Wrench,
@@ -41,12 +42,21 @@ import {
   HeroForm,
   ProjectsForm,
   SectionsManager,
+  SiteSettingsForm,
   SkillsForm,
   StatsForm,
   ToolsForm,
 } from "./sectionForms";
 
-type Screen = "overview" | "sections" | "preview" | "history" | "hero" | "contact" | SectionType;
+type Screen =
+  | "overview"
+  | "sections"
+  | "preview"
+  | "history"
+  | "hero"
+  | "contact"
+  | "site"
+  | SectionType;
 
 const NAV: { key: Screen; label: string; Icon: typeof Home }[] = [
   { key: "overview", label: "Overview", Icon: Home },
@@ -61,6 +71,7 @@ const NAV: { key: Screen; label: string; Icon: typeof Home }[] = [
   { key: "certifications", label: "Certifications", Icon: Award },
   { key: "education", label: "Education", Icon: GraduationCap },
   { key: "contact", label: "Contact", Icon: Mail },
+  { key: "site", label: "Site settings", Icon: Settings },
   { key: "preview", label: "Preview", Icon: Eye },
   { key: "history", label: "History", Icon: HistoryIcon },
 ];
@@ -72,6 +83,7 @@ const SCREEN_TITLES: Record<Screen, string> = {
   history: "Version history",
   hero: "Hero",
   contact: "Contact",
+  site: "Site settings",
   ...SECTION_LABELS,
 };
 
@@ -486,6 +498,13 @@ export function StudioApp() {
           <ContactForm
             contact={draft!.contact}
             onChange={(contact) => setDraft((d) => (d ? { ...d, contact } : d))}
+          />
+        );
+      case "site":
+        return (
+          <SiteSettingsForm
+            content={draft!}
+            onChange={(settings) => setDraft((d) => (d ? { ...d, settings } : d))}
           />
         );
       case "about": {

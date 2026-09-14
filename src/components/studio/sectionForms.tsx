@@ -1,6 +1,7 @@
 "use client";
 
 import { CHAR_LIMITS, ITEM_LIMITS } from "@/lib/limits";
+import { experienceCompanies, marqueeIsCustom, marqueeNames } from "@/lib/marquee";
 import type {
   About,
   CertificationItem,
@@ -10,12 +11,14 @@ import type {
   Hero,
   ProjectItem,
   Section,
+  SiteContent,
+  SiteSettings,
   SkillGroup,
   StatItem,
   ToolItem,
 } from "@/lib/types";
 import { PROFICIENCY_LEVELS, PROJECT_VERTICALS, SECTION_LABELS } from "@/lib/types";
-import { ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
+import { ChevronDown, ChevronUp, Eye, EyeOff, RotateCcw } from "lucide-react";
 import { newId, SelectField, TextAreaField, TextField } from "./fields";
 import { ImageField } from "./ImageField";
 import { EntityList, StringListEditor } from "./lists";
@@ -63,21 +66,20 @@ export function ContactForm({
 }) {
   return (
     <div className="space-y-5">
+      {/* The phone number is no longer shown anywhere on the site, so it has
+          no field here. A value saved earlier stays in the document untouched. */}
       <TextField
         label="Email"
         type="email"
         value={contact.email}
+        hint={`Shown in Contact and the footer, and it's where "Let's talk" leads.`}
         onChange={(email) => onChange({ ...contact, email })}
-      />
-      <TextField
-        label="Phone"
-        value={contact.phone ?? ""}
-        onChange={(phone) => onChange({ ...contact, phone: phone || undefined })}
       />
       <TextField
         label="LinkedIn URL"
         type="url"
-        placeholder="https://linkedin.com/in/…"
+        placeholder="https://www.linkedin.com/in/…"
+        hint={`Adds a "Visit LinkedIn" card to Contact and a link in the footer.`}
         value={contact.linkedinUrl ?? ""}
         onChange={(linkedinUrl) => onChange({ ...contact, linkedinUrl: linkedinUrl || undefined })}
       />
@@ -85,7 +87,7 @@ export function ContactForm({
         label="Resume URL"
         type="url"
         placeholder="https://…"
-        hint="When set, the header and hero show a Download Resume button."
+        hint="One link powers every Resume button — the header, the hero and the footer. Leave it empty and they don't show."
         value={contact.resumeUrl ?? ""}
         onChange={(resumeUrl) => onChange({ ...contact, resumeUrl: resumeUrl || undefined })}
       />
@@ -627,6 +629,88 @@ export function SectionsManager({
           </button>
         </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Site-level settings: the favicon and the hero's company banner. Both live
+ * in `draft.settings` and follow the same autosave → Publish → history path
+ * as everything else. The object is dropped entirely while nothing is set,
+ * so an untouched site stays byte-identical to what was published.
+ */
+export function SiteSettingsForm({
+  content,
+  onChange,
+}: {
+  content: SiteContent;
+  onChange: (settings: SiteSettings | undefined) => void;
+}) {
+  const settings = content.settings ?? {};
+  const custom = marqueeIsCustom(content);
+  const names = marqueeNames(content);
+  const derived = experienceCompanies(content);
+
+  function commit(patch: Partial<SiteSettings>) {
+    const next: SiteSettings = { ...settings, ...patch };
+    const empty = !next.favicon?.url && !Array.isArray(next.marquee);
+    onChange(empty ? undefined : next);
+  }
+
+  return (
+    <div className="space-y-8">
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold">Favicon</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            The small icon in the browser tab. A square image with a simple mark works best.
+            Like everything here, the tab only changes once you publish.
+          </p>
+        </div>
+        <ImageField
+          label="Icon"
+          image={settings.favicon}
+          ratio="1:1"
+          pathPrefix="favicon"
+          maxWidth={256}
+          onChange={(favicon) => commit({ favicon: favicon?.url ? favicon : undefined })}
+        />
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold">Company banner</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            The running line of company names along the bottom of the hero.{" "}
+            {custom
+              ? "This is your own list."
+              : "Right now it follows the companies in your Experience section — change anything below to take over the list."}
+          </p>
+        </div>
+        <StringListEditor
+          label="Companies"
+          values={names}
+          maxItems={ITEM_LIMITS.marquee}
+          maxChars={CHAR_LIMITS.marquee.company}
+          addLabel="Add company"
+          placeholder="Company name"
+          onChange={(marquee) => commit({ marquee })}
+        />
+        {custom && names.length === 0 && (
+          <p className="text-xs text-warning">The list is empty, so the banner is hidden.</p>
+        )}
+        {custom && (
+          <button
+            type="button"
+            onClick={() => commit({ marquee: undefined })}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors duration-200 hover:text-ink"
+          >
+            <RotateCcw className="h-4 w-4" strokeWidth={2} />
+            Follow Experience again
+            {derived.length > 0 ? ` (${derived.join(", ")})` : ""}
+          </button>
+        )}
+      </section>
     </div>
   );
 }

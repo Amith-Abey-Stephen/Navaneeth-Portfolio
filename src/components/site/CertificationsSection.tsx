@@ -70,7 +70,7 @@ export function CertificationsSection({ items }: { items: CertificationItem[] })
                     target="_blank"
                     rel="noreferrer"
                     aria-label={`${c.title} — view credential`}
-                    className={`group ${rowClass} transition-colors hover:bg-white/[0.04] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white`}
+                    className={`group ${rowClass} transition-colors hover:bg-white/[0.04] active:bg-white/[0.06] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white`}
                   >
                     {inner}
                   </a>
