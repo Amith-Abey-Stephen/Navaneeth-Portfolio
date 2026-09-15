@@ -125,7 +125,7 @@ export function Navbar({
           {/* mobile brand */}
           <a
             href="#hero"
-            className="flex min-w-0 items-center gap-2 rounded-full px-4 py-2 text-[15px] font-semibold md:hidden"
+            className="flex min-h-[44px] min-w-0 items-center gap-2 rounded-full px-4 py-2 text-[15px] font-semibold md:hidden"
           >
             <User size={17} aria-hidden /> <span className="truncate">{brand}</span>
           </a>

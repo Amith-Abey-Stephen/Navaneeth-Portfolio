@@ -39,7 +39,3 @@ export function initials(name: string, count = 2): string {
 export function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
-
-export function telHref(phone: string): string {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`;
-}

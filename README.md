@@ -2,7 +2,7 @@
 
 Next.js 16 site built on the cloned "portfolio-v4" design (Inter Tight, single
 continuous background canvas, ghost section titles, laptop-mock project cards,
-pill nav, rainbow cursor trail, Lenis smooth scroll) with a private, structured
+pill nav, Lenis smooth scroll) with a private, structured
 Content Studio at `/studio` so the owner edits content without touching code.
 
 ## Run
@@ -29,7 +29,10 @@ the studio shows a setup notice.
 
 ## How content flows
 
-- `src/lib/types.ts` — the content schema (hero, contact, ordered sections).
+- `src/lib/types.ts` — the content schema (hero, contact, ordered sections,
+  optional site settings: favicon + company banner).
+- `src/lib/marquee.ts` — the hero banner's one source of truth (the studio
+  list, or the Experience companies until one is set).
 - `src/lib/limits.ts` — character and item caps enforced in the studio forms.
 - `src/lib/seed.ts` — the real starting content.
 - `src/lib/content.ts` — draft autosave, publish (history of 20), restore.

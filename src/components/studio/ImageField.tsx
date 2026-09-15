@@ -16,20 +16,25 @@ const RATIO_CLASS: Record<AspectRatio, string> = {
 
 // 1:1 fields are icons, logos and badges — PNG keeps their transparency.
 // Wide covers are photos/screens — JPEG keeps them light.
-function outputFor(ratio: AspectRatio): { type: string; ext: string; maxW: number; quality?: number } {
-  return ratio === "1:1"
-    ? { type: "image/png", ext: "png", maxW: 1024 }
-    : { type: "image/jpeg", ext: "jpg", maxW: 1600, quality: 0.9 };
+function outputFor(
+  ratio: AspectRatio,
+  maxWidth?: number,
+): { type: string; ext: string; maxW: number; quality?: number } {
+  const base =
+    ratio === "1:1"
+      ? { type: "image/png", ext: "png", maxW: 1024 }
+      : { type: "image/jpeg", ext: "jpg", maxW: 1600, quality: 0.9 };
+  return maxWidth ? { ...base, maxW: maxWidth } : base;
 }
 
-async function cropToBlob(src: string, area: Area, ratio: AspectRatio): Promise<Blob> {
+async function cropToBlob(src: string, area: Area, ratio: AspectRatio, maxWidth?: number): Promise<Blob> {
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const el = new Image();
     el.onload = () => resolve(el);
     el.onerror = reject;
     el.src = src;
   });
-  const out = outputFor(ratio);
+  const out = outputFor(ratio, maxWidth);
   const scale = Math.min(1, out.maxW / area.width);
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(area.width * scale);
@@ -53,6 +58,7 @@ export function ImageField({
   pathPrefix,
   onChange,
   removable = true,
+  maxWidth,
 }: {
   label: string;
   image?: ImageRef;
@@ -60,6 +66,8 @@ export function ImageField({
   pathPrefix: string;
   onChange: (image?: ImageRef) => void;
   removable?: boolean;
+  /** Cap the saved image's width (px) below the ratio's default — e.g. a favicon. */
+  maxWidth?: number;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [src, setSrc] = useState<string | null>(null);
@@ -93,8 +101,8 @@ export function ImageField({
     setBusy(true);
     setError(null);
     try {
-      const blob = await cropToBlob(src, area, ratio);
-      const out = outputFor(ratio);
+      const blob = await cropToBlob(src, area, ratio, maxWidth);
+      const out = outputFor(ratio, maxWidth);
       const path = `${pathPrefix}-${Date.now()}.${out.ext}`;
       const sb = getSupabase();
       const { error } = await sb.storage.from("images").upload(path, blob, { contentType: out.type });

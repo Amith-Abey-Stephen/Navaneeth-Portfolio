@@ -2,13 +2,17 @@
 
 import { motion } from "motion/react";
 import Image from "next/image";
-import { Mail } from "lucide-react";
+import { ArrowDown, ArrowUpRight } from "lucide-react";
 import type { ContactInfo, Hero as HeroContent } from "@/lib/types";
-import { telHref } from "@/lib/format";
-import { GridLines, MagneticButton } from "./ui";
+import { ButtonIcon, GridLines, MagneticButton } from "./ui";
 import { LogoStrip, type StripItem } from "./LogoStrip";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
+
+const PRIMARY_BUTTON =
+  "min-h-[52px] items-center justify-center gap-2.5 bg-[#f2eee7] px-6 py-4 text-[15px] font-semibold text-black transition-colors duration-300 group-hover:bg-white group-active:bg-[#e7e1d6] sm:px-7 md:text-[16px]";
+const SECONDARY_BUTTON =
+  "min-h-[52px] items-center justify-center gap-2.5 border border-white/10 bg-[#111] px-6 py-4 text-[15px] font-medium text-white transition-colors duration-300 group-hover:border-white/25 group-hover:bg-[#1b1b1b] group-active:border-white/25 group-active:bg-[#1b1b1b] sm:px-7 md:text-[16px]";
 
 export function Hero({
   hero,
@@ -31,14 +35,8 @@ export function Hero({
     "--name-d": `clamp(64px, ${Math.min(11.5, 100 / longest).toFixed(2)}vw, 180px)`,
   } as React.CSSProperties;
 
-  // Second CTA follows what actually exists — never a placeholder link.
-  const secondary = contact.resumeUrl
-    ? { href: contact.resumeUrl, label: "Download Resume", external: true }
-    : contact.linkedinUrl
-      ? { href: contact.linkedinUrl, label: "LinkedIn", external: true }
-      : contact.phone
-        ? { href: telHref(contact.phone), label: "Call me", external: false }
-        : null;
+  // Resume is the one optional CTA; it only exists when the studio holds a URL.
+  const resume = contact.resumeUrl?.trim() || null;
 
   return (
     <section
@@ -103,7 +101,7 @@ export function Hero({
       {/* bottom copy — plain flow, no scroll-linked opacity/y.
           Title, bio and both CTAs stay fully opaque and scroll off together. */}
       <div className="relative z-20 flex flex-1 items-end">
-        <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 items-end gap-8 px-5 pb-28 sm:px-6 md:gap-10 md:px-12 md:pb-36 lg:grid-cols-2">
+        <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 items-end gap-6 px-5 pb-28 sm:gap-8 sm:px-6 md:gap-10 md:px-12 md:pb-36 lg:grid-cols-2">
           <div className="min-w-0">
             <motion.h1
               initial={{ opacity: 0, y: 36 }}
@@ -122,38 +120,41 @@ export function Hero({
             >
               {hero.shortBio}
             </motion.p>
+            {/* CTAs: side by side on phones too (two short labels), the
+                primary first; a single CTA simply takes the row */}
             <motion.div
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.85, duration: 0.8, ease: EASE }}
-              className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap md:mt-7 md:gap-4"
+              className={`mt-6 grid gap-3 sm:flex sm:flex-wrap md:mt-7 md:gap-4 ${
+                resume ? "grid-cols-2" : "grid-cols-1"
+              }`}
             >
-              <MagneticButton
-                href={`mailto:${contact.email}`}
-                className="inline-flex min-h-[52px] items-center justify-center gap-2.5 rounded-[10px] border border-white/10 bg-[#111] px-7 py-4 text-[15px] font-medium transition-colors duration-300 hover:border-white/20 hover:bg-[#1b1b1b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:text-[16px]"
-              >
-                <Mail size={17} className="shrink-0 text-orange-300" aria-hidden />
-                Email me
+              <MagneticButton href="#contact" className={PRIMARY_BUTTON}>
+                Let&apos;s talk
+                <ButtonIcon hover={{ y: 2 }}>
+                  <ArrowDown size={17} strokeWidth={2.2} />
+                </ButtonIcon>
               </MagneticButton>
-              {secondary && (
-                <MagneticButton
-                  href={secondary.href}
-                  target={secondary.external ? "_blank" : undefined}
-                  className="shimmer-btn inline-flex min-h-[52px] items-center justify-center rounded-[10px] border border-white/10 bg-[#111] px-7 py-4 text-[15px] font-medium transition-colors duration-300 hover:border-white/20 hover:bg-[#1b1b1b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:text-[16px]"
-                >
-                  <span className="book-shine">{secondary.label}</span>
+              {resume && (
+                <MagneticButton href={resume} target="_blank" className={SECONDARY_BUTTON}>
+                  Resume
+                  <span className="sr-only"> (opens in a new tab)</span>
+                  <ButtonIcon hover={{ x: 2, y: -2 }} className="text-orange-300">
+                    <ArrowUpRight size={17} strokeWidth={2.2} />
+                  </ButtonIcon>
                 </MagneticButton>
               )}
             </motion.div>
           </div>
 
-          <div className="min-w-0 lg:justify-self-end lg:text-right">
+          <div className="min-w-0 text-right lg:justify-self-end">
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.95, duration: 0.9 }}
               aria-hidden
-              className="font-script -rotate-[4deg] text-[36px] leading-none text-white/90 sm:text-[44px] md:text-[58px]"
+              className="font-script -rotate-[4deg] text-[34px] leading-none text-white/90 sm:text-[44px] md:text-[58px]"
             >
               {hero.name}
             </motion.p>

@@ -1,5 +1,6 @@
 import type { Section, SectionType, SiteContent } from "@/lib/types";
 import { renderableSections, SECTION_LABELS } from "@/lib/types";
+import { marqueeLogo, marqueeNames } from "@/lib/marquee";
 import { Navbar, type NavCta, type NavLink } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { AboutIntro } from "@/components/AboutIntro";
@@ -8,7 +9,6 @@ import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { SiteCanvas } from "@/components/SiteCanvas";
 import { Preloader } from "@/components/Preloader";
-import { CursorTrail } from "@/components/CursorTrail";
 import type { StripItem } from "@/components/LogoStrip";
 import { StatsSection } from "./StatsSection";
 import { ExperienceSection } from "./ExperienceSection";
@@ -64,7 +64,14 @@ export function PublicSite({
   content: SiteContent;
   preloader?: boolean;
 }) {
-  const { hero, contact } = content;
+  const { hero } = content;
+  // Only the channels the site actually shows reach the client components —
+  // a legacy phone number stays in the stored document but never in the page.
+  const contact = {
+    email: content.contact.email,
+    linkedinUrl: content.contact.linkedinUrl,
+    resumeUrl: content.contact.resumeUrl,
+  };
   const sections = renderableSections(content);
   const present = new Set(sections.map((s) => s.type));
 
@@ -80,28 +87,22 @@ export function PublicSite({
       })),
     { id: "contact", href: "#contact", label: "Contact" },
   ];
-  const cta: NavCta = contact.resumeUrl
-    ? { href: contact.resumeUrl, label: "Download Resume", external: true }
-    : { href: `mailto:${contact.email}`, label: "Email me" };
+  // The nav's one CTA is the resume. No resume URL in the studio → no CTA,
+  // never a placeholder link.
+  const resumeUrl = contact.resumeUrl?.trim();
+  const cta: NavCta | null = resumeUrl ? { href: resumeUrl, label: "Resume", external: true } : null;
   const brand = hero.name.trim().split(/\s+/)[0] || hero.name;
 
-  // The hero's running banner: the companies from Experience (deduplicated).
-  const strip: StripItem[] = [];
-  const experience = sections.find((s) => s.type === "experience");
-  if (experience && experience.type === "experience") {
-    const seen = new Set<string>();
-    for (const e of experience.items) {
-      const key = e.company.trim().toLowerCase();
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      strip.push({ label: e.company.trim(), src: e.logo?.url || undefined });
-    }
-  }
+  // The hero's running banner: the studio's company list, or — until the
+  // owner sets one — the companies from Experience (see lib/marquee).
+  const strip: StripItem[] = marqueeNames(content).map((name) => ({
+    label: name,
+    src: marqueeLogo(content, name),
+  }));
 
   return (
     <SiteProviders>
       {preloader && <Preloader name={hero.name} subtitle={hero.tagline} />}
-      <CursorTrail />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[95] focus:rounded-full focus:bg-[#f2eee7] focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-black"
