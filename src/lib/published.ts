@@ -9,26 +9,30 @@ export type PublishedSite = {
   live: boolean; // false → rendered from the built-in seed (Supabase not configured / reachable)
 };
 
+const FALLBACK: PublishedSite = { content: SEED_CONTENT, version: null, live: false };
+
 /**
  * Server-side read of the published content. The public site never touches
  * `draft`. Falls back to the seed so the site renders before the backend is
  * provisioned or if it is briefly unreachable.
+ *
+ * Reads `site_public` — the view that exposes only the published content
+ * (minus the stored phone number) while the `site` table itself is owner-only
+ * (supabase/setup.sql). A project whose SQL predates the view still answers
+ * on the table, so the page keeps working either way.
  */
 export const getPublishedSite = cache(async function getPublishedSite(): Promise<PublishedSite> {
-  if (!supabaseEnabled()) {
-    return { content: SEED_CONTENT, version: null, live: false };
-  }
+  if (!supabaseEnabled()) return FALLBACK;
   try {
-    const { data, error } = await getSupabase()
-      .from("site")
-      .select("published, version")
-      .eq("id", "main")
-      .maybeSingle();
-    if (error || !data) {
-      return { content: SEED_CONTENT, version: null, live: false };
+    const sb = getSupabase();
+    const view = await sb.from("site_public").select("published, version").eq("id", "main").maybeSingle();
+    if (!view.error && view.data) {
+      return { content: view.data.published as SiteContent, version: view.data.version, live: true };
     }
-    return { content: data.published as SiteContent, version: data.version, live: true };
+    const table = await sb.from("site").select("published, version").eq("id", "main").maybeSingle();
+    if (table.error || !table.data) return FALLBACK;
+    return { content: table.data.published as SiteContent, version: table.data.version, live: true };
   } catch {
-    return { content: SEED_CONTENT, version: null, live: false };
+    return FALLBACK;
   }
 });

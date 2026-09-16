@@ -19,7 +19,7 @@ export function SkillsSection({ items }: { items: SkillGroup[] }) {
     >
       <GridLines />
       <GhostTitle>Skills</GhostTitle>
-      <div className="relative mx-auto mt-4 max-w-[1440px] md:mt-8">
+      <div className="relative z-[2] mx-auto mt-4 max-w-[1440px] md:mt-8">
         {items.map((g, i) => (
           <SkillRow key={g.id} group={g} index={i} />
         ))}

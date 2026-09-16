@@ -115,6 +115,30 @@ export type Section =
 
 export type SectionType = Section["type"];
 
+export type DeveloperCredit = {
+  enabled: boolean;
+  name: string;
+  siteUrl: string;
+  role?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+};
+
+export type SeoSettings = {
+  metaTitle?: string;
+  metaDescription?: string;
+  canonicalUrl?: string;
+  ogImage?: ImageRef;
+  twitterHandle?: string;
+  keywords?: string[];
+  googleVerification?: string;
+  bingVerification?: string;
+  gaMeasurementId?: string;
+  geoRegion?: string;
+  geoPlacename?: string;
+  developerCredit?: DeveloperCredit;
+};
+
 /**
  * Site-level settings added in the V2 pass. Every field is optional so documents
  * written before it existed keep loading unchanged; a missing `settings` means
@@ -123,6 +147,7 @@ export type SectionType = Section["type"];
 export type SiteSettings = {
   favicon?: ImageRef; // "1:1" — the browser-tab icon, follows draft → publish
   marquee?: string[]; // company names for the running banner; undefined → derived from Experience
+  seo?: SeoSettings;
 };
 
 export type SiteContent = {

@@ -283,11 +283,13 @@ export function Projects({ items }: { items: ProjectItem[] }) {
       <motion.span
         aria-hidden
         style={{ y: ghostY, opacity: ghostOpacity }}
-        className="ghost-huge pointer-events-none absolute -top-4 left-0 text-[27vw] md:text-[15vw]"
+        className="ghost-huge pointer-events-none absolute -top-4 left-0 z-[2] text-[27vw] md:text-[15vw]"
       >
         Projects
       </motion.span>
-      <div className="relative mx-auto max-w-[1440px] pt-[13vw] md:pt-[7.5vw]">
+      {/* z-2 keeps the cards above the journey line; the narrower column is the
+          V3 "moderately smaller cards" — the card itself is untouched */}
+      <div className="relative z-[2] mx-auto max-w-[1160px] pt-[13vw] md:pt-[7.5vw]">
         {groups.map((g, gi) => {
           return (
             <div key={g.vertical} className={gi > 0 ? "mt-14 md:mt-20" : ""}>

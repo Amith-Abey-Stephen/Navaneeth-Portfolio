@@ -220,4 +220,18 @@ export const SEED_CONTENT: SiteContent = {
       ],
     },
   ],
+  settings: {
+    seo: {
+      canonicalUrl: "https://thenavaneeth.com",
+      twitterHandle: "@Navaneethtalks",
+      developerCredit: {
+        enabled: true,
+        name: "Amith Abey Stephen",
+        role: "Developed by",
+        siteUrl: "https://amith.site/",
+        linkedinUrl: "https://www.linkedin.com/in/amith-abey-stephen/",
+        githubUrl: "https://github.com/Amith-Abey-Stephen/",
+      },
+    },
+  },
 };

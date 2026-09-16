@@ -20,7 +20,7 @@ export function AboutIntro({ data }: { data: About }) {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-[#3a0f06]/55 to-[#0a0a0c] md:h-72"
       />
-      <div className="relative mx-auto grid max-w-[1440px] grid-cols-1 items-start gap-6 md:gap-10 lg:grid-cols-2 lg:gap-16">
+      <div className="relative z-[2] mx-auto grid max-w-[1440px] grid-cols-1 items-start gap-6 md:gap-10 lg:grid-cols-2 lg:gap-16">
         <TextReveal
           as="h2"
           className="text-balance font-heading text-[clamp(28px,7.5vw,36px)] font-semibold leading-[1.12] tracking-tight text-white sm:text-[36px] md:text-[60px]"

@@ -20,7 +20,7 @@ export function EducationSection({ items }: { items: EducationItem[] }) {
     >
       <GridLines />
       <GhostTitle>Education</GhostTitle>
-      <div className="relative mx-auto mt-4 max-w-[1440px] md:mt-8">
+      <div className="relative z-[2] mx-auto mt-4 max-w-[1440px] md:mt-8">
         {items.map((e, i) => (
           <EducationRow key={e.id} item={e} index={i} />
         ))}

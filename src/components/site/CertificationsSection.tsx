@@ -19,7 +19,7 @@ export function CertificationsSection({ items }: { items: CertificationItem[] })
     >
       <GridLines />
       <GhostTitle>Certifications</GhostTitle>
-      <div className="relative mx-auto mt-2 max-w-[1100px] overflow-hidden rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl md:mt-6">
+      <div className="relative z-[2] mx-auto mt-2 max-w-[1100px] overflow-hidden rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl md:mt-6">
         {items.map((c, i) => {
           const meta = [
             c.issuer,

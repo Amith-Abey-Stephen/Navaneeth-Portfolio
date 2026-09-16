@@ -25,8 +25,11 @@ export function ToolsSection({ items }: { items: ToolItem[] }) {
       className="relative scroll-mt-24 overflow-hidden bg-transparent px-5 pb-16 pt-6 sm:px-6 md:px-12 md:pb-24 md:pt-10"
     >
       <GridLines />
-      <GhostTitle>Tools</GhostTitle>
-      <ScrollReveal className="relative mx-auto mt-2 max-w-[1240px] md:mt-6">
+      {/* z-2: the journey line leaves the page through this heading, behind it */}
+      <div className="relative z-[2]">
+        <GhostTitle>Tools</GhostTitle>
+      </div>
+      <ScrollReveal className="relative z-[2] mx-auto mt-2 max-w-[1240px] md:mt-6">
         <div className="overflow-hidden rounded-2xl border border-white/10">
           <ul className="-mb-px -mr-px grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
             {items.map((t) => (
