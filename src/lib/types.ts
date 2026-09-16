@@ -131,6 +131,11 @@ export type SeoSettings = {
   ogImage?: ImageRef;
   twitterHandle?: string;
   keywords?: string[];
+  googleVerification?: string;
+  bingVerification?: string;
+  gaMeasurementId?: string;
+  geoRegion?: string;
+  geoPlacename?: string;
   developerCredit?: DeveloperCredit;
 };
 

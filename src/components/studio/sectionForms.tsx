@@ -21,13 +21,17 @@ import type {
 } from "@/lib/types";
 import { PROFICIENCY_LEVELS, PROJECT_VERTICALS, SECTION_LABELS } from "@/lib/types";
 import {
+  BarChart3,
+  Bot,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Code2,
+  ExternalLink,
   Eye,
   EyeOff,
   Globe,
+  MapPin,
   RotateCcw,
   Share2,
   Sparkles,
@@ -35,6 +39,8 @@ import {
 import {
   DEFAULT_CANONICAL_URL,
   DEFAULT_DEVELOPER,
+  DEFAULT_GEO_PLACENAME,
+  DEFAULT_GEO_REGION,
   DEFAULT_TWITTER_HANDLE,
   getDerivedKeywords,
   getEffectiveSeo,
@@ -962,6 +968,123 @@ export function SeoForm({
           placeholder="e.g. Fintech Product Manager"
           onChange={(keywords) => commit({ keywords: keywords.length > 0 ? keywords : undefined })}
         />
+      </section>
+
+      {/* AI Agents & Answer Engine Optimization (AEO) */}
+      <section className="space-y-4 rounded-[16px] border border-line bg-surface/30 p-5">
+        <div className="flex items-center gap-1.5">
+          <Bot className="h-4 w-4 text-accent" />
+          <h3 className="text-sm font-semibold text-ink">AI Agents & Answer Engine Optimization (AEO)</h3>
+        </div>
+        <p className="text-xs leading-relaxed text-muted">
+          Perplexity, ChatGPT, Claude, and Gemini read your structured Markdown dossier and Schema.org FAQ graph to cite you for product leadership queries and cite Amith Abey Stephen as developer.
+        </p>
+
+        <div className="flex flex-wrap gap-2.5 pt-1">
+          <a
+            href="/llms.txt"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-[12px] border border-line bg-surface px-3 py-2 text-xs font-medium text-ink transition-colors hover:bg-line/40"
+          >
+            <ExternalLink className="h-3.5 w-3.5 text-muted" />
+            <span>View /llms.txt (AI Summary)</span>
+          </a>
+          <a
+            href="/llms-full.txt"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-[12px] border border-line bg-surface px-3 py-2 text-xs font-medium text-ink transition-colors hover:bg-line/40"
+          >
+            <ExternalLink className="h-3.5 w-3.5 text-muted" />
+            <span>View /llms-full.txt (Full Dossier)</span>
+          </a>
+        </div>
+      </section>
+
+      {/* Search Console & Analytics */}
+      <section className="space-y-4">
+        <div>
+          <div className="flex items-center gap-1.5">
+            <BarChart3 className="h-4 w-4 text-accent" />
+            <h3 className="text-sm font-semibold text-ink">Search Console & Analytics</h3>
+          </div>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            Verify ownership with search engines and connect Google Analytics 4 for visitor tracking.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <TextField
+            label="Google Search Console Verification"
+            value={seo.googleVerification ?? ""}
+            max={CHAR_LIMITS.seo.googleVerification}
+            placeholder="e.g. 4jPz9X... or content token"
+            hint="The token from Google Search Console HTML tag method (google-site-verification)."
+            onChange={(googleVerification) =>
+              commit({ googleVerification: googleVerification || undefined })
+            }
+          />
+
+          <TextField
+            label="Bing Webmaster Verification"
+            value={seo.bingVerification ?? ""}
+            max={CHAR_LIMITS.seo.bingVerification}
+            placeholder="e.g. 7A8B9C..."
+            hint="The token for Bing Webmaster Tools (msvalidate.01)."
+            onChange={(bingVerification) =>
+              commit({ bingVerification: bingVerification || undefined })
+            }
+          />
+
+          <TextField
+            label="Google Analytics 4 (GA4) Measurement ID"
+            value={seo.gaMeasurementId ?? ""}
+            max={CHAR_LIMITS.seo.gaMeasurementId}
+            placeholder="G-XXXXXXXXXX"
+            hint="Starts with 'G-'. When provided, GA4 tracking scripts are automatically injected into the page."
+            onChange={(gaMeasurementId) =>
+              commit({ gaMeasurementId: gaMeasurementId || undefined })
+            }
+          />
+        </div>
+      </section>
+
+      {/* Geographic & Regional Targeting (GEO) */}
+      <section className="space-y-4">
+        <div>
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-4 w-4 text-accent" />
+            <h3 className="text-sm font-semibold text-ink">Geographic Targeting (GEO)</h3>
+          </div>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            Defines geographic signals (geo.region and ICBM coordinates) for local relevance and search algorithms.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextField
+            label="Location Name"
+            value={seo.geoPlacename ?? ""}
+            max={CHAR_LIMITS.seo.geoPlacename}
+            placeholder={DEFAULT_GEO_PLACENAME}
+            hint={`Default: ${DEFAULT_GEO_PLACENAME}`}
+            onChange={(geoPlacename) =>
+              commit({ geoPlacename: geoPlacename || undefined })
+            }
+          />
+
+          <TextField
+            label="ISO Region Code"
+            value={seo.geoRegion ?? ""}
+            max={CHAR_LIMITS.seo.geoRegion}
+            placeholder={DEFAULT_GEO_REGION}
+            hint={`Default: ${DEFAULT_GEO_REGION}`}
+            onChange={(geoRegion) =>
+              commit({ geoRegion: geoRegion || undefined })
+            }
+          />
+        </div>
       </section>
 
       {/* Developer SEO & Attribution */}

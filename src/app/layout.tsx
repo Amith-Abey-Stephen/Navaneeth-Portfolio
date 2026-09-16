@@ -30,6 +30,13 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${interTight.variable}`}
     >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://sbrcekbvqlcgsgmhzgfk.supabase.co" />
+        <link rel="dns-prefetch" href="https://sbrcekbvqlcgsgmhzgfk.supabase.co" />
+        <link rel="author" href="/humans.txt" />
+      </head>
       <body className="bg-[#09090b] text-white antialiased">{children}</body>
     </html>
   );

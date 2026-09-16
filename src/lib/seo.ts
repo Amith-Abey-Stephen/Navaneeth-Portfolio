@@ -12,6 +12,10 @@ export const DEFAULT_DEVELOPER: DeveloperCredit = {
 
 export const DEFAULT_CANONICAL_URL = "https://thenavaneeth.com";
 export const DEFAULT_TWITTER_HANDLE = "@Navaneethtalks";
+export const DEFAULT_GEO_REGION = "IN-KL";
+export const DEFAULT_GEO_PLACENAME = "Kerala, India";
+export const DEFAULT_GEO_POSITION = "8.5241;76.9366";
+export const DEFAULT_GEO_ICBM = "8.5241, 76.9366";
 
 export type EffectiveSeo = {
   title: string;
@@ -22,6 +26,13 @@ export type EffectiveSeo = {
   faviconUrl: string | undefined;
   developer: DeveloperCredit;
   keywords: string[];
+  googleVerification?: string;
+  bingVerification?: string;
+  gaMeasurementId?: string;
+  geoRegion: string;
+  geoPlacename: string;
+  geoPosition: string;
+  geoIcbm: string;
 };
 
 /**
@@ -59,6 +70,9 @@ export function getEffectiveSeo(content: SiteContent): EffectiveSeo {
 
   const keywords = getDerivedKeywords(content);
 
+  const geoRegion = custom?.geoRegion?.trim() || DEFAULT_GEO_REGION;
+  const geoPlacename = custom?.geoPlacename?.trim() || DEFAULT_GEO_PLACENAME;
+
   return {
     title,
     description,
@@ -68,6 +82,13 @@ export function getEffectiveSeo(content: SiteContent): EffectiveSeo {
     faviconUrl,
     developer,
     keywords,
+    googleVerification: custom?.googleVerification?.trim() || undefined,
+    bingVerification: custom?.bingVerification?.trim() || undefined,
+    gaMeasurementId: custom?.gaMeasurementId?.trim() || undefined,
+    geoRegion,
+    geoPlacename,
+    geoPosition: DEFAULT_GEO_POSITION,
+    geoIcbm: DEFAULT_GEO_ICBM,
   };
 }
 
@@ -136,6 +157,7 @@ export function getDerivedKeywords(content: SiteContent): string[] {
   if (dev.enabled && dev.name?.trim()) {
     set.add(dev.name.trim());
     set.add(`${dev.name.trim()} web developer`);
+    set.add(`${dev.name.trim()} portfolio developer`);
   }
 
   // Custom user keywords
@@ -150,7 +172,8 @@ export function getDerivedKeywords(content: SiteContent): string[] {
 
 /**
  * Generates an end-to-end Schema.org JSON-LD multi-entity graph linking
- * the WebSite, ProfilePage, Person, CreativeWorks (projects), and Developer.
+ * the WebSite, ProfilePage, Person, CreativeWorks (projects), FAQPage (AEO),
+ * Breadcrumbs, and Developer.
  */
 export function generateJsonLdGraph(content: SiteContent) {
   const seo = getEffectiveSeo(content);
@@ -217,6 +240,10 @@ export function generateJsonLdGraph(content: SiteContent) {
       description: seo.description,
       isPartOf: { "@id": `${canonical}/#website` },
       mainEntity: { "@id": `${canonical}/#person` },
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: ["#hero h1", "#hero p", "#about p"],
+      },
       ...(developerEntity ? { creator: developerEntity } : {}),
     },
     {
@@ -229,7 +256,13 @@ export function generateJsonLdGraph(content: SiteContent) {
       ...(seo.ogImageUrl ? { image: seo.ogImageUrl } : {}),
       email: `mailto:${content.contact.email}`,
       sameAs,
-      knowsAbout: seo.keywords.slice(0, 25),
+      knowsAbout: seo.keywords.slice(0, 30),
+      address: {
+        "@type": "PostalAddress",
+        addressRegion: seo.geoRegion,
+        addressCountry: "IN",
+        addressLocality: seo.geoPlacename.split(",")[0]?.trim() || "Kerala",
+      },
       ...(currentJob
         ? {
             worksFor: {
@@ -246,6 +279,63 @@ export function generateJsonLdGraph(content: SiteContent) {
             },
           }
         : {}),
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${canonical}/#breadcrumbs`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${canonical}/#hero` },
+        { "@type": "ListItem", position: 2, name: "Experience", item: `${canonical}/#experience` },
+        { "@type": "ListItem", position: 3, name: "Work & Projects", item: `${canonical}/#projects` },
+        { "@type": "ListItem", position: 4, name: "Skills & Tools", item: `${canonical}/#skills` },
+        { "@type": "ListItem", position: 5, name: "Contact", item: `${canonical}/#contact` },
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${canonical}/#faq`,
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: `Who is ${hero.name}?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `${hero.name} is an ${hero.tagline}. ${hero.shortBio}`,
+          },
+        },
+        {
+          "@type": "Question",
+          name: `Who designed and engineered ${hero.name}'s portfolio website?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `This website was designed, engineered, and developed by ${seo.developer.name} (${seo.developer.siteUrl}). It is built using Next.js 16 (App Router), React 19, TypeScript, TailwindCSS, Supabase headless CMS, and Schema.org knowledge graph integration.`,
+          },
+        },
+        {
+          "@type": "Question",
+          name: `What products and case studies has ${hero.name} shipped?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `${hero.name} has shipped and led products including ${projects.length > 0 ? projects.map((p) => p.title).join("; ") : "UCEK Events, ProposalPilot, and ecommerce growth platforms"}.`,
+          },
+        },
+        {
+          "@type": "Question",
+          name: `How can I contact ${hero.name} for product leadership roles?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `You can contact ${hero.name} by email at ${content.contact.email} or connect on LinkedIn at ${content.contact.linkedinUrl ?? canonical}.`,
+          },
+        },
+        {
+          "@type": "Question",
+          name: `How can I view ${seo.developer.name}'s engineering work and contact him?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `You can visit ${seo.developer.name}'s website at ${seo.developer.siteUrl}, browse code repositories on GitHub (${seo.developer.githubUrl ?? "https://github.com/Amith-Abey-Stephen/"}), or connect on LinkedIn (${seo.developer.linkedinUrl ?? "https://www.linkedin.com/in/amith-abey-stephen/"}).`,
+          },
+        },
+      ],
     },
   ];
 

@@ -56,6 +56,14 @@ export async function generateMetadata(): Promise<Metadata> {
       ...(seo.ogImageUrl ? { images: [seo.ogImageUrl] } : {}),
     },
     other: {
+      "geo.region": seo.geoRegion,
+      "geo.placename": seo.geoPlacename,
+      "geo.position": seo.geoPosition,
+      ICBM: seo.geoIcbm,
+      "profile:first_name": content.hero.name.split(/\s+/)[0] || content.hero.name,
+      "profile:last_name": content.hero.name.split(/\s+/).slice(1).join(" "),
+      "profile:username": seo.twitterHandle.replace(/^@/, ""),
+      "ai:llms-txt": `${seo.canonicalUrl.replace(/\/+$/, "")}/llms.txt`,
       ...(seo.developer.enabled
         ? {
             developer: seo.developer.name,
@@ -65,6 +73,14 @@ export async function generateMetadata(): Promise<Metadata> {
           }
         : {}),
     },
+    ...(seo.googleVerification || seo.bingVerification
+      ? {
+          verification: {
+            ...(seo.googleVerification ? { google: seo.googleVerification } : {}),
+            ...(seo.bingVerification ? { other: { "msvalidate.01": seo.bingVerification } } : {}),
+          },
+        }
+      : {}),
     ...(seo.faviconUrl
       ? { icons: { icon: [{ url: seo.faviconUrl }], apple: [{ url: seo.faviconUrl }] } }
       : {}),
@@ -81,6 +97,7 @@ function jsonForScript(value: unknown): string {
 
 export default async function HomePage() {
   const { content } = await getPublishedSite();
+  const seo = getEffectiveSeo(content);
   const jsonLd = generateJsonLdGraph(content);
 
   return (
@@ -91,8 +108,22 @@ export default async function HomePage() {
         // the tag. Escaping the three delimiters keeps it valid JSON and inert.
         dangerouslySetInnerHTML={{ __html: jsonForScript(jsonLd) }}
       />
+      {seo.gaMeasurementId && (
+        <>
+          <script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${seo.gaMeasurementId}`}
+          />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${seo.gaMeasurementId}',{page_path:window.location.pathname});`,
+            }}
+          />
+        </>
+      )}
       <PublicSite content={content} />
     </>
   );
 }
+
 

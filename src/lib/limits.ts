@@ -23,6 +23,11 @@ export const CHAR_LIMITS = {
     developerName: 60,
     developerRole: 40,
     developerUrl: 160,
+    googleVerification: 100,
+    bingVerification: 100,
+    gaMeasurementId: 30,
+    geoRegion: 20,
+    geoPlacename: 60,
   },
 } as const;
 
