@@ -18,7 +18,7 @@ export function StatsSection({ items }: { items: StatItem[] }) {
     >
       <GridLines />
       <h2 className="sr-only">Stats</h2>
-      <div className="relative mx-auto max-w-[1200px] text-center">
+      <div className="relative z-[2] mx-auto max-w-[1200px] text-center">
         <div className="grid grid-cols-2 md:grid-flow-col md:auto-cols-fr md:grid-cols-none">
           {items.map((s, i) => {
             const m = /^(\d+)(.*)$/.exec(s.value.trim());

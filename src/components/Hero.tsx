@@ -47,10 +47,12 @@ export function Hero({
           into the shared canvas (no hard clip into the banner) */}
       <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,black_66%,transparent_100%)]">
         {hero.photo.url && (
-          /* The portrait is a 1:1 upload. Below lg it fills the viewport like
-             the reference; from lg it becomes a right-anchored panel feathered
-             into the grade, so the square is never cropped to a sliver. */
-          <div className="absolute inset-0 lg:left-auto lg:w-[58vw] lg:[mask-image:linear-gradient(to_right,transparent,black_40%)]">
+          /* The portrait is a 1:1 upload. Below lg it fills the viewport width
+             and starts under the fixed nav (top-3 + 58px pill = 70px), its top
+             edge feathered, so the head is never under the glass; from lg it
+             becomes a right-anchored panel feathered into the grade, so the
+             square is never cropped to a sliver. */
+          <div className="absolute inset-x-0 bottom-0 top-[4.5rem] [mask-image:linear-gradient(to_bottom,transparent,black_10%)] lg:left-auto lg:top-0 lg:w-[58vw] lg:[mask-image:linear-gradient(to_right,transparent,black_32%)]">
             <Image
               src={hero.photo.url}
               alt={`${hero.name} portrait`}
@@ -62,8 +64,10 @@ export function Hero({
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/15 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#ff3d0a]/55 via-transparent to-black/45" />
-        <div className="absolute inset-0 bg-[radial-gradient(90%_60%_at_70%_20%,rgba(255,60,10,0.35),transparent_60%)]" />
+        {/* the grade sits lighter over the face (top) and, from lg, over the
+            jacket too — the portrait reads as a portrait, still melted in */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#ff3d0a]/55 via-transparent to-black/25 lg:from-[#ff3d0a]/45" />
+        <div className="absolute inset-0 bg-[radial-gradient(90%_60%_at_70%_20%,rgba(255,60,10,0.2),transparent_60%)]" />
       </div>
 
       <GridLines />
@@ -89,7 +93,7 @@ export function Hero({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.1, ease: EASE, delay: 0.42 }}
             aria-hidden
-            className="-mt-[5vw] flex justify-end font-heading text-[length:var(--name-m)] font-bold leading-[0.88] tracking-tight md:-mt-[2vw] md:text-[length:var(--name-d)]"
+            className="mt-0 flex justify-end font-heading text-[length:var(--name-m)] font-bold leading-[0.88] tracking-tight md:-mt-[2vw] md:text-[length:var(--name-d)]"
           >
             <span className="bg-gradient-to-r from-white via-white to-white/30 bg-clip-text text-transparent">
               {rest}
@@ -146,18 +150,6 @@ export function Hero({
                 </MagneticButton>
               )}
             </motion.div>
-          </div>
-
-          <div className="min-w-0 text-right lg:justify-self-end">
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.95, duration: 0.9 }}
-              aria-hidden
-              className="font-script -rotate-[4deg] text-[34px] leading-none text-white/90 sm:text-[44px] md:text-[58px]"
-            >
-              {hero.name}
-            </motion.p>
           </div>
         </div>
       </div>

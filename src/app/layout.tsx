@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Inter_Tight, Great_Vibes } from "next/font/google";
+import { Inter, Inter_Tight } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -11,13 +11,6 @@ const inter = Inter({
 const interTight = Inter_Tight({
   subsets: ["latin"],
   variable: "--font-display-next",
-  display: "swap",
-});
-
-const greatVibes = Great_Vibes({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-script-next",
   display: "swap",
 });
 
@@ -35,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${interTight.variable} ${greatVibes.variable}`}
+      className={`${inter.variable} ${interTight.variable}`}
     >
       <body className="bg-[#09090b] text-white antialiased">{children}</body>
     </html>

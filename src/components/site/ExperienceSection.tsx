@@ -5,25 +5,21 @@ import { motion, useInView } from "motion/react";
 import type { ExperienceItem } from "@/lib/types";
 import { formatRange, initials, pad2 } from "@/lib/format";
 import { GridLines, useReveal } from "@/components/ui";
-import { ExperienceFlow } from "./ExperienceFlow";
 import { GhostTitle } from "./GhostTitle";
 
 /**
  * Experience as the reference's "journey" list: hairline-divided rows, a big
  * role title with a superscript index on the left, the story on the right,
- * hashtag tags, and the flowing line drawing itself behind as you scroll.
+ * hashtag tags. The journey line (site/JourneyFlow, mounted in PublicSite)
+ * runs behind this section at z-1, which is why the content sits at z-2.
  */
 export function ExperienceSection({ items }: { items: ExperienceItem[] }) {
-  const sectionRef = useRef<HTMLElement>(null);
-
   return (
     <section
       id="experience"
-      ref={sectionRef}
       className="relative scroll-mt-24 overflow-hidden bg-transparent px-5 pb-10 pt-6 sm:px-6 md:px-12 md:pt-10"
     >
       <GridLines />
-      <ExperienceFlow target={sectionRef} />
       <div className="relative z-[2]">
         <GhostTitle>Experience</GhostTitle>
       </div>

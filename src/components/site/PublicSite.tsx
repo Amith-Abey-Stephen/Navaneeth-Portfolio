@@ -1,6 +1,7 @@
 import type { Section, SectionType, SiteContent } from "@/lib/types";
 import { renderableSections, SECTION_LABELS } from "@/lib/types";
 import { marqueeLogo, marqueeNames } from "@/lib/marquee";
+import { sanitizeContent } from "@/lib/urls";
 import { Navbar, type NavCta, type NavLink } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { AboutIntro } from "@/components/AboutIntro";
@@ -16,6 +17,7 @@ import { ToolsSection } from "./ToolsSection";
 import { SkillsSection } from "./SkillsSection";
 import { CertificationsSection } from "./CertificationsSection";
 import { EducationSection } from "./EducationSection";
+import { JourneyFlow } from "./JourneyFlow";
 import { SiteProviders } from "./SiteProviders";
 
 function renderSection(section: Section) {
@@ -58,12 +60,14 @@ const NAV_PRIORITY: SectionType[] = [
  * There is no second implementation that could drift.
  */
 export function PublicSite({
-  content,
+  content: raw,
   preloader = true,
 }: {
   content: SiteContent;
   preloader?: boolean;
 }) {
+  // Every owner-typed URL passes one gate before it can become an href or src.
+  const content = sanitizeContent(raw);
   const { hero } = content;
   // Only the channels the site actually shows reach the client components —
   // a legacy phone number stays in the stored document but never in the page.
@@ -114,7 +118,9 @@ export function PublicSite({
         <SiteCanvas />
         <div className="relative">
           <Navbar links={links} brand={brand} cta={cta} />
-          <main id="main">
+          <main id="main" className="relative">
+            {/* the journey line: Experience → Projects → Tools, behind the sections' content */}
+            <JourneyFlow />
             <Hero hero={hero} contact={contact} strip={strip} />
             {sections.map(renderSection)}
             <Contact contact={contact} />

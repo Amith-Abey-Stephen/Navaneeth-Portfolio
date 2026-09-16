@@ -57,6 +57,10 @@ export function TextField({
   placeholder?: string;
   type?: "text" | "url" | "email" | "month";
 }) {
+  // The site only ever links to http(s) URLs (see lib/urls); say so here
+  // instead of letting a typo silently drop the link from the page.
+  const trimmed = value.trim();
+  const badUrl = type === "url" && trimmed.length > 0 && !/^https?:\/\//i.test(trimmed);
   return (
     <FieldShell
       label={label}
@@ -69,8 +73,14 @@ export function TextField({
         value={value}
         maxLength={max}
         placeholder={placeholder}
+        aria-invalid={badUrl || undefined}
         onChange={(e) => onChange(max !== undefined ? e.target.value.slice(0, max) : e.target.value)}
       />
+      {badUrl && (
+        <span className="mt-1.5 block text-xs text-warning">
+          Links need to start with https:// — the site won&apos;t show this one until it does.
+        </span>
+      )}
     </FieldShell>
   );
 }
