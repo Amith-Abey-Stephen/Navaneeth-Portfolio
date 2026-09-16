@@ -1,25 +1,76 @@
 import type { Metadata } from "next";
 import { PublicSite } from "@/components/site/PublicSite";
 import { getPublishedSite } from "@/lib/published";
-import { safeImageUrl, safeLinkUrl } from "@/lib/urls";
+import { generateJsonLdGraph, getEffectiveSeo } from "@/lib/seo";
 
 // Rendered on every request so a publish shows up immediately.
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { content } = await getPublishedSite();
-  const title = `${content.hero.name} — ${content.hero.tagline}`;
-  // The favicon is part of the published content, so a draft change in the
-  // studio never reaches the tab until the owner publishes. No upload yet →
-  // no icon tag at all (the browser's default), never an invented asset.
-  const favicon = safeImageUrl(content.settings?.favicon?.url);
-  return {
-    title,
-    description: content.hero.shortBio,
-    openGraph: { title, description: content.hero.shortBio, type: "profile" },
-    twitter: { card: "summary", title, description: content.hero.shortBio },
-    ...(favicon ? { icons: { icon: [{ url: favicon }], apple: [{ url: favicon }] } } : {}),
+  const seo = getEffectiveSeo(content);
+
+  const metadata: Metadata = {
+    metadataBase: new URL(seo.canonicalUrl),
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
+    alternates: {
+      canonical: seo.canonicalUrl,
+    },
+    authors: [
+      ...(seo.developer.enabled
+        ? [{ name: seo.developer.name, url: seo.developer.siteUrl }]
+        : []),
+      { name: content.hero.name, url: seo.canonicalUrl },
+    ],
+    creator: seo.developer.enabled ? seo.developer.name : content.hero.name,
+    publisher: content.hero.name,
+    category: "Portfolio",
+    openGraph: {
+      title: seo.title,
+      description: seo.description,
+      url: seo.canonicalUrl,
+      siteName: `${content.hero.name} Portfolio`,
+      locale: "en_US",
+      type: "profile",
+      ...(seo.ogImageUrl
+        ? {
+            images: [
+              {
+                url: seo.ogImageUrl,
+                width: 1200,
+                height: 630,
+                alt: seo.title,
+              },
+            ],
+          }
+        : {}),
+    },
+    twitter: {
+      card: seo.ogImageUrl ? "summary_large_image" : "summary",
+      title: seo.title,
+      description: seo.description,
+      creator: seo.twitterHandle,
+      site: seo.twitterHandle,
+      ...(seo.ogImageUrl ? { images: [seo.ogImageUrl] } : {}),
+    },
+    other: {
+      ...(seo.developer.enabled
+        ? {
+            developer: seo.developer.name,
+            "developer:url": seo.developer.siteUrl,
+            ...(seo.developer.linkedinUrl ? { "developer:linkedin": seo.developer.linkedinUrl } : {}),
+            ...(seo.developer.githubUrl ? { "developer:github": seo.developer.githubUrl } : {}),
+          }
+        : {}),
+    },
+    ...(seo.faviconUrl
+      ? { icons: { icon: [{ url: seo.faviconUrl }], apple: [{ url: seo.faviconUrl }] } }
+      : {}),
   };
+
+  return metadata;
 }
 
 function jsonForScript(value: unknown): string {
@@ -30,17 +81,7 @@ function jsonForScript(value: unknown): string {
 
 export default async function HomePage() {
   const { content } = await getPublishedSite();
-
-  const linkedin = safeLinkUrl(content.contact.linkedinUrl);
-  const personJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: content.hero.name,
-    jobTitle: content.hero.tagline,
-    description: content.hero.shortBio,
-    email: `mailto:${content.contact.email}`,
-    ...(linkedin ? { sameAs: [linkedin] } : {}),
-  };
+  const jsonLd = generateJsonLdGraph(content);
 
   return (
     <>
@@ -48,9 +89,10 @@ export default async function HomePage() {
         type="application/ld+json"
         // JSON is not HTML-safe: a "</script>" inside a content field would end
         // the tag. Escaping the three delimiters keeps it valid JSON and inert.
-        dangerouslySetInnerHTML={{ __html: jsonForScript(personJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonForScript(jsonLd) }}
       />
       <PublicSite content={content} />
     </>
   );
 }
+

@@ -14,6 +14,16 @@ export const CHAR_LIMITS = {
   certification: { title: 90, issuer: 50 },
   education: { degree: 110, institution: 70 },
   marquee: { company: 60 }, // same cap as an experience company name
+  seo: {
+    metaTitle: 70,
+    metaDescription: 320,
+    canonicalUrl: 160,
+    twitterHandle: 40,
+    keyword: 40,
+    developerName: 60,
+    developerRole: 40,
+    developerUrl: 160,
+  },
 } as const;
 
 export const ITEM_LIMITS = {
@@ -29,6 +39,7 @@ export const ITEM_LIMITS = {
   certifications: 12,
   education: 6,
   marquee: 12,
+  seoKeywords: 20,
 } as const;
 
 export const HISTORY_LIMIT = 20;

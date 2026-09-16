@@ -6,11 +6,13 @@ import type {
   About,
   CertificationItem,
   ContactInfo,
+  DeveloperCredit,
   EducationItem,
   ExperienceItem,
   Hero,
   ProjectItem,
   Section,
+  SeoSettings,
   SiteContent,
   SiteSettings,
   SkillGroup,
@@ -18,7 +20,25 @@ import type {
   ToolItem,
 } from "@/lib/types";
 import { PROFICIENCY_LEVELS, PROJECT_VERTICALS, SECTION_LABELS } from "@/lib/types";
-import { ChevronDown, ChevronUp, Eye, EyeOff, RotateCcw } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Code2,
+  Eye,
+  EyeOff,
+  Globe,
+  RotateCcw,
+  Share2,
+  Sparkles,
+} from "lucide-react";
+import {
+  DEFAULT_CANONICAL_URL,
+  DEFAULT_DEVELOPER,
+  DEFAULT_TWITTER_HANDLE,
+  getDerivedKeywords,
+  getEffectiveSeo,
+} from "@/lib/seo";
 import { newId, SelectField, TextAreaField, TextField } from "./fields";
 import { ImageField } from "./ImageField";
 import { EntityList, StringListEditor } from "./lists";
@@ -714,3 +734,305 @@ export function SiteSettingsForm({
     </div>
   );
 }
+
+/**
+ * SEO & Reach Management Form:
+ * Real-time SERP / social preview, custom metadata overrides, OpenGraph image,
+ * auto-derived keywords inspector, and developer SEO credits.
+ */
+export function SeoForm({
+  content,
+  onChange,
+}: {
+  content: SiteContent;
+  onChange: (seo: SeoSettings | undefined) => void;
+}) {
+  const seo = content.settings?.seo ?? {};
+  const effective = getEffectiveSeo(content);
+  const derivedKeywords = getDerivedKeywords(content);
+  const dev = seo.developerCredit ?? DEFAULT_DEVELOPER;
+
+  function commit(patch: Partial<SeoSettings>) {
+    const next: SeoSettings = { ...seo, ...patch };
+    onChange(next);
+  }
+
+  function commitDev(patch: Partial<DeveloperCredit>) {
+    const nextDev: DeveloperCredit = { ...dev, ...patch };
+    commit({ developerCredit: nextDev });
+  }
+
+  const hostname = (() => {
+    try {
+      return new URL(effective.canonicalUrl).hostname;
+    } catch {
+      return "thenavaneeth.com";
+    }
+  })();
+
+  return (
+    <div className="space-y-10">
+      {/* Live Previews Header */}
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-base font-semibold text-ink">Live Search & Social Preview</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            See how your portfolio appears in Google search results and when shared on Twitter/X,
+            LinkedIn, WhatsApp, and Slack.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {/* Google Search Snippet */}
+          <div className="rounded-[16px] border border-line bg-surface p-4 sm:p-5 shadow-sm">
+            <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted">
+              <Globe className="h-3.5 w-3.5" />
+              <span>Google Search Result</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-white">
+                N
+              </span>
+              <div className="min-w-0">
+                <span className="block truncate text-[13px] font-medium text-ink">{hostname}</span>
+                <span className="block truncate text-[11px] text-muted">{effective.canonicalUrl}</span>
+              </div>
+            </div>
+            <div className="mt-2.5 text-base font-semibold text-[#1a0dab] dark:text-[#8ab4f8] hover:underline cursor-pointer">
+              {effective.title}
+            </div>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted line-clamp-2">
+              {effective.description}
+            </p>
+          </div>
+
+          {/* Social Share Card */}
+          <div className="overflow-hidden rounded-[16px] border border-line bg-surface shadow-sm">
+            <div className="flex items-center gap-1.5 border-b border-line bg-surface/50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted">
+              <Share2 className="h-3.5 w-3.5" />
+              <span>Social Share Card (Twitter, LinkedIn, Slack)</span>
+            </div>
+            {effective.ogImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={effective.ogImageUrl}
+                alt="Social Share Preview"
+                className="aspect-[1.91/1] w-full object-cover"
+              />
+            ) : (
+              <div className="flex aspect-[1.91/1] w-full flex-col justify-between bg-gradient-to-br from-[#18181b] via-[#27272a] to-[#09090b] p-6 text-white">
+                <div className="flex items-center justify-between text-xs text-white/50">
+                  <span className="font-semibold uppercase tracking-wider">{effective.twitterHandle}</span>
+                  <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px]">Auto Preview</span>
+                </div>
+                <div>
+                  <div className="text-xl font-bold tracking-tight text-white">{content.hero.name}</div>
+                  <div className="mt-1 text-sm text-white/75">{content.hero.tagline}</div>
+                </div>
+                <div className="text-xs text-white/40">{hostname}</div>
+              </div>
+            )}
+            <div className="p-4">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted">
+                {hostname}
+              </span>
+              <div className="mt-1 text-sm font-semibold text-ink line-clamp-1">{effective.title}</div>
+              <div className="mt-0.5 text-xs text-muted line-clamp-2">{effective.description}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Meta Title & Description */}
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-ink">Metadata Overrides</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            Customize how search engines index your page. Leave blank to automatically use your hero title and bio.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <TextField
+            label="Meta Title"
+            value={seo.metaTitle ?? ""}
+            max={CHAR_LIMITS.seo.metaTitle}
+            placeholder={`${content.hero.name} — ${content.hero.tagline}`}
+            hint={`Default: "${content.hero.name} — ${content.hero.tagline}". Google typically displays 50–60 characters.`}
+            onChange={(metaTitle) => commit({ metaTitle: metaTitle || undefined })}
+          />
+
+          <TextAreaField
+            label="Meta Description"
+            value={seo.metaDescription ?? ""}
+            max={CHAR_LIMITS.seo.metaDescription}
+            rows={3}
+            placeholder={content.hero.shortBio}
+            hint="Default: Your hero short bio. Search engines typically display 140–160 characters in snippets."
+            onChange={(metaDescription) => commit({ metaDescription: metaDescription || undefined })}
+          />
+        </div>
+      </section>
+
+      {/* Social & Canonical URLs */}
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-ink">Domain & Social Identity</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            The canonical URL Google indexes and your X/Twitter handle for social attribution.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <TextField
+            label="Canonical URL"
+            type="url"
+            value={seo.canonicalUrl ?? ""}
+            max={CHAR_LIMITS.seo.canonicalUrl}
+            placeholder={DEFAULT_CANONICAL_URL}
+            hint={`The permanent web address of this portfolio. Default: ${DEFAULT_CANONICAL_URL}`}
+            onChange={(canonicalUrl) => commit({ canonicalUrl: canonicalUrl || undefined })}
+          />
+
+          <TextField
+            label="X / Twitter Handle"
+            value={seo.twitterHandle ?? ""}
+            max={CHAR_LIMITS.seo.twitterHandle}
+            placeholder={DEFAULT_TWITTER_HANDLE}
+            hint={`Attributed in twitter:creator and twitter:site cards. Default: ${DEFAULT_TWITTER_HANDLE}`}
+            onChange={(twitterHandle) => commit({ twitterHandle: twitterHandle || undefined })}
+          />
+        </div>
+      </section>
+
+      {/* OG Share Image */}
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-ink">Social Sharing Image (OpenGraph)</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            The preview banner shown when your link is shared on social networks and messaging apps.
+            Recommended size: 1200 × 630 px (16:9 ratio). If none is uploaded, your hero portrait is used.
+          </p>
+        </div>
+
+        <ImageField
+          label="Share Image (16:9)"
+          image={seo.ogImage}
+          ratio="16:9"
+          pathPrefix="og-image"
+          maxWidth={1200}
+          onChange={(ogImage) => commit({ ogImage: ogImage?.url ? ogImage : undefined })}
+        />
+      </section>
+
+      {/* Keywords & Search Engine Reach */}
+      <section className="space-y-4">
+        <div>
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="h-4 w-4 text-accent" />
+            <h3 className="text-sm font-semibold text-ink">Search Engine Keywords & AI Reach</h3>
+          </div>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            These keywords are automatically compiled from your projects, tools, skills, and experience to help Google, Perplexity, and AI search engines discover your work.
+          </p>
+        </div>
+
+        <div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">
+            Auto-derived keywords ({derivedKeywords.length})
+          </p>
+          <div className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto rounded-[12px] border border-line bg-surface/40 p-3">
+            {derivedKeywords.map((k) => (
+              <span
+                key={k}
+                className="inline-flex items-center rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-medium text-ink"
+              >
+                {k}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <StringListEditor
+          label="Custom Additional Keywords"
+          values={seo.keywords ?? []}
+          maxItems={ITEM_LIMITS.seoKeywords}
+          maxChars={CHAR_LIMITS.seo.keyword}
+          addLabel="Add custom keyword"
+          placeholder="e.g. Fintech Product Manager"
+          onChange={(keywords) => commit({ keywords: keywords.length > 0 ? keywords : undefined })}
+        />
+      </section>
+
+      {/* Developer SEO & Attribution */}
+      <section className="space-y-4 rounded-[16px] border border-line bg-surface/30 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <Code2 className="h-4 w-4 text-accent" />
+              <h3 className="text-sm font-semibold text-ink">Developer Attribution & SEO Credits</h3>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-muted">
+              Credits the developer in HTML metadata, Schema.org crawler graph, and the footer.
+            </p>
+          </div>
+          <label className="relative inline-flex cursor-pointer items-center">
+            <input
+              type="checkbox"
+              checked={dev.enabled}
+              onChange={(e) => commitDev({ enabled: e.target.checked })}
+              className="peer sr-only"
+            />
+            <div className="h-6 w-11 rounded-full bg-line transition-colors peer-checked:bg-ink peer-focus:outline-none">
+              <div className="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-5" />
+            </div>
+          </label>
+        </div>
+
+        {dev.enabled && (
+          <div className="space-y-3 border-t border-line pt-2">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <TextField
+                label="Developer Name"
+                value={dev.name}
+                max={CHAR_LIMITS.seo.developerName}
+                onChange={(name) => commitDev({ name })}
+              />
+              <TextField
+                label="Credit Role"
+                value={dev.role ?? "Developed by"}
+                max={CHAR_LIMITS.seo.developerRole}
+                hint="E.g. 'Developed by'"
+                onChange={(role) => commitDev({ role })}
+              />
+            </div>
+            <TextField
+              label="Developer Website URL"
+              type="url"
+              value={dev.siteUrl}
+              max={CHAR_LIMITS.seo.developerUrl}
+              onChange={(siteUrl) => commitDev({ siteUrl })}
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <TextField
+                label="LinkedIn Profile"
+                type="url"
+                value={dev.linkedinUrl ?? ""}
+                placeholder="https://www.linkedin.com/in/amith-abey-stephen/"
+                onChange={(linkedinUrl) => commitDev({ linkedinUrl: linkedinUrl || undefined })}
+              />
+              <TextField
+                label="GitHub Profile"
+                type="url"
+                value={dev.githubUrl ?? ""}
+                placeholder="https://github.com/Amith-Abey-Stephen/"
+                onChange={(githubUrl) => commitDev({ githubUrl: githubUrl || undefined })}
+              />
+            </div>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+

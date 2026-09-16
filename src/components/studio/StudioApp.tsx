@@ -25,6 +25,7 @@ import {
   Layers,
   LogOut,
   Mail,
+  Search,
   Settings,
   Sparkles,
   User as UserIcon,
@@ -42,6 +43,7 @@ import {
   HeroForm,
   ProjectsForm,
   SectionsManager,
+  SeoForm,
   SiteSettingsForm,
   SkillsForm,
   StatsForm,
@@ -56,6 +58,7 @@ type Screen =
   | "hero"
   | "contact"
   | "site"
+  | "seo"
   | SectionType;
 
 const NAV: { key: Screen; label: string; Icon: typeof Home }[] = [
@@ -72,6 +75,7 @@ const NAV: { key: Screen; label: string; Icon: typeof Home }[] = [
   { key: "education", label: "Education", Icon: GraduationCap },
   { key: "contact", label: "Contact", Icon: Mail },
   { key: "site", label: "Site settings", Icon: Settings },
+  { key: "seo", label: "SEO & Reach", Icon: Search },
   { key: "preview", label: "Preview", Icon: Eye },
   { key: "history", label: "History", Icon: HistoryIcon },
 ];
@@ -84,6 +88,7 @@ const SCREEN_TITLES: Record<Screen, string> = {
   hero: "Hero",
   contact: "Contact",
   site: "Site settings",
+  seo: "SEO & Reach",
   ...SECTION_LABELS,
 };
 
@@ -505,6 +510,25 @@ export function StudioApp() {
           <SiteSettingsForm
             content={draft!}
             onChange={(settings) => setDraft((d) => (d ? { ...d, settings } : d))}
+          />
+        );
+      case "seo":
+        return (
+          <SeoForm
+            content={draft!}
+            onChange={(seo) =>
+              setDraft((d) =>
+                d
+                  ? {
+                      ...d,
+                      settings: {
+                        ...(d.settings ?? {}),
+                        seo,
+                      },
+                    }
+                  : d,
+              )
+            }
           />
         );
       case "about": {

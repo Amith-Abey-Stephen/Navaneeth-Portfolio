@@ -56,7 +56,25 @@ export function sanitizeContent(content: SiteContent): SiteContent {
       resumeUrl: safeLinkUrl(content.contact.resumeUrl),
     },
     settings: content.settings
-      ? { ...content.settings, favicon: optionalImg(content.settings.favicon) }
+      ? {
+          ...content.settings,
+          favicon: optionalImg(content.settings.favicon),
+          seo: content.settings.seo
+            ? {
+                ...content.settings.seo,
+                canonicalUrl: safeLinkUrl(content.settings.seo.canonicalUrl),
+                ogImage: optionalImg(content.settings.seo.ogImage),
+                developerCredit: content.settings.seo.developerCredit
+                  ? {
+                      ...content.settings.seo.developerCredit,
+                      siteUrl: safeLinkUrl(content.settings.seo.developerCredit.siteUrl) ?? "https://amith.site/",
+                      linkedinUrl: safeLinkUrl(content.settings.seo.developerCredit.linkedinUrl),
+                      githubUrl: safeLinkUrl(content.settings.seo.developerCredit.githubUrl),
+                    }
+                  : undefined,
+              }
+            : undefined,
+        }
       : content.settings,
     sections: content.sections.map((s): Section => {
       switch (s.type) {

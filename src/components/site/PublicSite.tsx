@@ -125,7 +125,7 @@ export function PublicSite({
             {sections.map(renderSection)}
             <Contact contact={contact} />
           </main>
-          <Footer name={hero.name} contact={contact} />
+          <Footer name={hero.name} contact={contact} settings={content.settings} />
         </div>
       </div>
     </SiteProviders>
