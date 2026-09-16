@@ -6,7 +6,6 @@ import type {
   About,
   CertificationItem,
   ContactInfo,
-  DeveloperCredit,
   EducationItem,
   ExperienceItem,
   Hero,
@@ -22,12 +21,9 @@ import type {
 import { PROFICIENCY_LEVELS, PROJECT_VERTICALS, SECTION_LABELS } from "@/lib/types";
 import {
   BarChart3,
-  Bot,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
-  Code2,
-  ExternalLink,
   Eye,
   EyeOff,
   Globe,
@@ -38,7 +34,6 @@ import {
 } from "lucide-react";
 import {
   DEFAULT_CANONICAL_URL,
-  DEFAULT_DEVELOPER,
   DEFAULT_GEO_PLACENAME,
   DEFAULT_GEO_REGION,
   DEFAULT_TWITTER_HANDLE,
@@ -744,7 +739,7 @@ export function SiteSettingsForm({
 /**
  * SEO & Reach Management Form:
  * Real-time SERP / social preview, custom metadata overrides, OpenGraph image,
- * auto-derived keywords inspector, and developer SEO credits.
+ * auto-derived keywords inspector, and verification tokens.
  */
 export function SeoForm({
   content,
@@ -756,16 +751,10 @@ export function SeoForm({
   const seo = content.settings?.seo ?? {};
   const effective = getEffectiveSeo(content);
   const derivedKeywords = getDerivedKeywords(content);
-  const dev = seo.developerCredit ?? DEFAULT_DEVELOPER;
 
   function commit(patch: Partial<SeoSettings>) {
     const next: SeoSettings = { ...seo, ...patch };
     onChange(next);
-  }
-
-  function commitDev(patch: Partial<DeveloperCredit>) {
-    const nextDev: DeveloperCredit = { ...dev, ...patch };
-    commit({ developerCredit: nextDev });
   }
 
   const hostname = (() => {
@@ -970,38 +959,6 @@ export function SeoForm({
         />
       </section>
 
-      {/* AI Agents & Answer Engine Optimization (AEO) */}
-      <section className="space-y-4 rounded-[16px] border border-line bg-surface/30 p-5">
-        <div className="flex items-center gap-1.5">
-          <Bot className="h-4 w-4 text-accent" />
-          <h3 className="text-sm font-semibold text-ink">AI Agents & Answer Engine Optimization (AEO)</h3>
-        </div>
-        <p className="text-xs leading-relaxed text-muted">
-          Perplexity, ChatGPT, Claude, and Gemini read your structured Markdown dossier and Schema.org FAQ graph to cite you for product leadership queries and cite Amith Abey Stephen as developer.
-        </p>
-
-        <div className="flex flex-wrap gap-2.5 pt-1">
-          <a
-            href="/llms.txt"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-[12px] border border-line bg-surface px-3 py-2 text-xs font-medium text-ink transition-colors hover:bg-line/40"
-          >
-            <ExternalLink className="h-3.5 w-3.5 text-muted" />
-            <span>View /llms.txt (AI Summary)</span>
-          </a>
-          <a
-            href="/llms-full.txt"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-[12px] border border-line bg-surface px-3 py-2 text-xs font-medium text-ink transition-colors hover:bg-line/40"
-          >
-            <ExternalLink className="h-3.5 w-3.5 text-muted" />
-            <span>View /llms-full.txt (Full Dossier)</span>
-          </a>
-        </div>
-      </section>
-
       {/* Search Console & Analytics */}
       <section className="space-y-4">
         <div>
@@ -1050,21 +1007,19 @@ export function SeoForm({
         </div>
       </section>
 
-      {/* Geographic & Regional Targeting (GEO) */}
-      <section className="space-y-4">
-        <div>
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-4 w-4 text-accent" />
-            <h3 className="text-sm font-semibold text-ink">Geographic Targeting (GEO)</h3>
-          </div>
-          <p className="mt-1 text-sm leading-relaxed text-muted">
-            Defines geographic signals (geo.region and ICBM coordinates) for local relevance and search algorithms.
-          </p>
+      {/* GEO & Local Entity Knowledge Graph */}
+      <section className="space-y-4 rounded-[16px] border border-line bg-surface/30 p-5">
+        <div className="flex items-center gap-1.5">
+          <MapPin className="h-4 w-4 text-accent" />
+          <h3 className="text-sm font-semibold text-ink">GEO Targeting & Knowledge Graph Address</h3>
         </div>
+        <p className="text-xs leading-relaxed text-muted">
+          Regional signals embedded directly into Schema.org Person, ICBM, and Dublin Core tags.
+        </p>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           <TextField
-            label="Location Name"
+            label="Location / Placename"
             value={seo.geoPlacename ?? ""}
             max={CHAR_LIMITS.seo.geoPlacename}
             placeholder={DEFAULT_GEO_PLACENAME}
@@ -1086,76 +1041,6 @@ export function SeoForm({
           />
         </div>
       </section>
-
-      {/* Developer SEO & Attribution */}
-      <section className="space-y-4 rounded-[16px] border border-line bg-surface/30 p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <Code2 className="h-4 w-4 text-accent" />
-              <h3 className="text-sm font-semibold text-ink">Developer Attribution & SEO Credits</h3>
-            </div>
-            <p className="mt-1 text-xs leading-relaxed text-muted">
-              Credits the developer in HTML metadata, Schema.org crawler graph, and the footer.
-            </p>
-          </div>
-          <label className="relative inline-flex cursor-pointer items-center">
-            <input
-              type="checkbox"
-              checked={dev.enabled}
-              onChange={(e) => commitDev({ enabled: e.target.checked })}
-              className="peer sr-only"
-            />
-            <div className="h-6 w-11 rounded-full bg-line transition-colors peer-checked:bg-ink peer-focus:outline-none">
-              <div className="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-5" />
-            </div>
-          </label>
-        </div>
-
-        {dev.enabled && (
-          <div className="space-y-3 border-t border-line pt-2">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <TextField
-                label="Developer Name"
-                value={dev.name}
-                max={CHAR_LIMITS.seo.developerName}
-                onChange={(name) => commitDev({ name })}
-              />
-              <TextField
-                label="Credit Role"
-                value={dev.role ?? "Developed by"}
-                max={CHAR_LIMITS.seo.developerRole}
-                hint="E.g. 'Developed by'"
-                onChange={(role) => commitDev({ role })}
-              />
-            </div>
-            <TextField
-              label="Developer Website URL"
-              type="url"
-              value={dev.siteUrl}
-              max={CHAR_LIMITS.seo.developerUrl}
-              onChange={(siteUrl) => commitDev({ siteUrl })}
-            />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <TextField
-                label="LinkedIn Profile"
-                type="url"
-                value={dev.linkedinUrl ?? ""}
-                placeholder="https://www.linkedin.com/in/amith-abey-stephen/"
-                onChange={(linkedinUrl) => commitDev({ linkedinUrl: linkedinUrl || undefined })}
-              />
-              <TextField
-                label="GitHub Profile"
-                type="url"
-                value={dev.githubUrl ?? ""}
-                placeholder="https://github.com/Amith-Abey-Stephen/"
-                onChange={(githubUrl) => commitDev({ githubUrl: githubUrl || undefined })}
-              />
-            </div>
-          </div>
-        )}
-      </section>
     </div>
   );
 }
-
