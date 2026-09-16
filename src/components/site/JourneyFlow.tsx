@@ -164,15 +164,15 @@ export function JourneyFlow() {
             </linearGradient>
           </defs>
           {/* faint track — the whole route, before it is drawn */}
-          <path d={d} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+          <path d={d} fill="none" stroke="rgba(255,255,255,0.035)" strokeWidth="1" />
           {/* soft halo */}
           <motion.path
             d={d}
             fill="none"
             stroke="url(#journey-flow)"
-            strokeWidth={mobile ? 5 : 7}
+            strokeWidth={mobile ? 4.5 : 6}
             strokeLinecap="round"
-            opacity={0.12}
+            opacity={0.07}
             style={{ pathLength: drawn }}
           />
           {/* the line */}
@@ -180,9 +180,9 @@ export function JourneyFlow() {
             d={d}
             fill="none"
             stroke="url(#journey-flow)"
-            strokeWidth={mobile ? 1.25 : 1.75}
+            strokeWidth={mobile ? 1.2 : 1.5}
             strokeLinecap="round"
-            opacity={mobile ? 0.4 : 0.75}
+            opacity={mobile ? 0.26 : 0.42}
             style={{ pathLength: drawn }}
           />
         </svg>
@@ -220,17 +220,10 @@ function sameLayout(a: Layout | null, b: Layout): boolean {
 const fmt = (n: number) => n.toFixed(1);
 
 /**
- * The route, in overlay coordinates. Enter beyond the left edge at the first
- * heading, turn at alternating sides on the way down (an even number of turns,
- * first right, last left, so the exit sweeps the full width), and leave
- * beyond the right edge through the last heading. Turns are spaced by a
- * weighted height — Projects counts for less, so the line lingers behind the
- * cards rather than wiggling behind them — with the first and last pulled a
- * little towards the headings they answer to. Each piece is a Hermite
- * segment: vertical tangents at the turns, the straight line to the
- * neighbouring turn at both ends (so the sweeps never wobble). On phones the
- * turns sit in the side padding, so the line runs beside the text rather
- * than through it, and only the crossings pass behind a line or two.
+ * The route, in overlay coordinates.
+ * Enters smoothly from outside the screen strictly below the Experience title,
+ * follows a harmonious, soft-curved wave through Experience and Projects,
+ * and leaves smoothly through the Tools heading.
  */
 function journeyPath(l: Layout, mobile: boolean): string {
   const W = l.width;
@@ -239,25 +232,26 @@ function journeyPath(l: Layout, mobile: boolean): string {
   const last = stops[stops.length - 1];
   const endsAtHeading = stops.length > 1 && last.id === "tools";
   const cx = W / 2;
-  const amp = W * (mobile ? 0.46 : 0.4);
-  const halfWave = mobile ? Math.max(W * 2.2, 560) : Math.max(W * 0.7, 480);
+  const amp = W * (mobile ? 0.44 : 0.36);
+  const halfWave = mobile ? Math.max(W * 1.8, 520) : Math.max(W * 0.65, 500);
   const local = (abs: number) => abs - l.top;
   const headH = (s: Stop) => s.headBottom - s.headTop;
 
-  const entry: Pt = { x: -W * 0.08, y: local(first.headTop) + headH(first) * 0.35 };
-  const exit: Pt = endsAtHeading
-    ? { x: W * 1.08, y: local(last.headBottom) + headH(last) * 0.25 }
-    : { x: W * 1.08, y: local(last.bottom) - (mobile ? 48 : 96) };
+  // Starts strictly below the Experience title, originating from outside the screen on the left
+  const entryY = local(first.headBottom) + (mobile ? 18 : 26);
+  const entry: Pt = { x: -Math.max(W * 0.08, 64), y: entryY };
 
-  const waveTop = local(first.headBottom) + (mobile ? 32 : 48);
+  const exit: Pt = endsAtHeading
+    ? { x: W + Math.max(W * 0.08, 64), y: local(last.headBottom) + headH(last) * 0.25 }
+    : { x: W + Math.max(W * 0.08, 64), y: local(last.bottom) - (mobile ? 48 : 96) };
+
+  const waveTop = entryY + (mobile ? 44 : 64);
   const waveBottom = endsAtHeading
     ? local(last.headTop) - headH(last) * 0.5
     : exit.y - halfWave * 0.45;
 
   const pts: Pt[] = [entry];
   if (waveBottom - waveTop >= 160) {
-    // Weighted vertical parameterisation: every section's share of the route
-    // is its height × density; anything else between them counts fully.
     const cuts = new Set<number>([waveTop, waveBottom]);
     for (const s of stops) {
       for (const y of [local(s.top), local(s.bottom)]) {
@@ -290,25 +284,50 @@ function journeyPath(l: Layout, mobile: boolean): string {
   }
   pts.push(exit);
 
-  const down: Pt = { x: 0, y: 1 };
   const lastIndex = pts.length - 1;
   let d = `M ${fmt(entry.x)} ${fmt(entry.y)}`;
   for (let i = 0; i < lastIndex; i++) {
     const p0 = pts[i];
     const p1 = pts[i + 1];
-    const straight = norm({ x: p1.x - p0.x, y: p1.y - p0.y });
-    const t0 = i === 0 ? straight : down;
-    const t1 = i + 1 === lastIndex ? straight : down;
-    // Pull of each control point: half the horizontal run for the diagonal
-    // ends, a little over half the drop for the vertical turns (round bends).
-    const k0 = i === 0 ? 0.45 * Math.abs(p1.x - p0.x) : 0.55 * Math.abs(p1.y - p0.y);
-    const k1 = i + 1 === lastIndex ? 0.45 * Math.abs(p1.x - p0.x) : 0.55 * Math.abs(p1.y - p0.y);
-    d += ` C ${fmt(p0.x + t0.x * k0)} ${fmt(p0.y + t0.y * k0)}, ${fmt(p1.x - t1.x * k1)} ${fmt(p1.y - t1.y * k1)}, ${fmt(p1.x)} ${fmt(p1.y)}`;
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+
+    let cp0: Pt;
+    let cp1: Pt;
+
+    if (i === 0) {
+      // Smooth organic entrance: gentle sweeping curve coming in from outside the screen
+      cp0 = {
+        x: p0.x + Math.max(Math.abs(dx) * 0.36, 48),
+        y: p0.y + dy * 0.12,
+      };
+      cp1 = {
+        x: p1.x,
+        y: p1.y - dy * 0.36,
+      };
+    } else if (i + 1 === lastIndex) {
+      // Smooth organic exit: curves gracefully out off-screen
+      cp0 = {
+        x: p0.x,
+        y: p0.y + dy * 0.36,
+      };
+      cp1 = {
+        x: p1.x - Math.max(Math.abs(dx) * 0.36, 48),
+        y: p1.y - dy * 0.12,
+      };
+    } else {
+      // Harmonic sinusoidal curve between alternating turns (C1 smooth, natural flow)
+      cp0 = {
+        x: p0.x,
+        y: p0.y + dy * 0.36,
+      };
+      cp1 = {
+        x: p1.x,
+        y: p1.y - dy * 0.36,
+      };
+    }
+
+    d += ` C ${fmt(cp0.x)} ${fmt(cp0.y)}, ${fmt(cp1.x)} ${fmt(cp1.y)}, ${fmt(p1.x)} ${fmt(p1.y)}`;
   }
   return d;
-}
-
-function norm(p: Pt): Pt {
-  const len = Math.hypot(p.x, p.y) || 1;
-  return { x: p.x / len, y: p.y / len };
 }

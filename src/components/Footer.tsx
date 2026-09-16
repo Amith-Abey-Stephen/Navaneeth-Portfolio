@@ -1,5 +1,6 @@
 import type { ContactInfo, SiteSettings } from "@/lib/types";
 import { DEFAULT_DEVELOPER } from "@/lib/seo";
+import { ChevronRight } from "lucide-react";
 
 export function Footer({
   name,
@@ -22,22 +23,44 @@ export function Footer({
 
   return (
     <footer className="relative overflow-hidden bg-transparent pb-6 pt-8 md:pb-8 md:pt-10">
-      <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-center gap-x-6 gap-y-1 px-5 font-heading text-[13px] text-white/45 sm:px-6 sm:text-[14px] md:justify-between md:gap-x-8 md:px-12">
-        {links.map((l) => (
-          <a
-            key={l.label}
-            href={l.href}
-            target={l.external ? "_blank" : undefined}
-            rel={l.external ? "noreferrer" : undefined}
-            className="inline-flex min-h-[44px] items-center rounded px-2 transition-colors hover:text-white active:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-          >
-            {l.label}
-          </a>
-        ))}
+      {/* Editorial segmented links ribbon (Image 2 aesthetic, elevated with micro-interactions) */}
+      <div className="mx-auto max-w-[1240px] px-5 sm:px-6 md:px-12">
+        <nav
+          aria-label="Footer navigation"
+          className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-white/[0.08]"
+        >
+          {links.map((l) => (
+            <a
+              key={l.label}
+              href={l.href}
+              target={l.external ? "_blank" : undefined}
+              rel={l.external ? "noreferrer" : undefined}
+              className="group relative flex min-h-[56px] items-center justify-between px-6 py-4 font-heading transition-colors duration-300 hover:bg-white/[0.03] active:bg-white/[0.06] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white sm:px-8 sm:py-5"
+            >
+              {/* Subtle top hairline accent on hover */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              />
+
+              <span className="text-[14px] font-normal tracking-wide text-white/70 transition-colors duration-300 group-hover:text-white sm:text-[15px]">
+                {l.label}
+              </span>
+
+              <ChevronRight
+                size={17}
+                strokeWidth={1.8}
+                className="text-white/35 transition-all duration-300 group-hover:translate-x-1.5 group-hover:text-white"
+                aria-hidden
+              />
+            </a>
+          ))}
+        </nav>
       </div>
+
       <p
         aria-hidden
-        className="pointer-events-none mx-auto mt-2 max-w-full select-none overflow-hidden whitespace-nowrap text-center font-heading text-[15vw] font-bold leading-[0.9] tracking-tight text-white/[0.09] sm:text-[16vw] md:mt-4 md:text-[13vw] lg:text-[11vw]"
+        className="pointer-events-none mx-auto mt-6 max-w-full select-none overflow-hidden whitespace-nowrap text-center font-heading text-[15vw] font-bold leading-[0.9] tracking-tight text-white/[0.09] sm:mt-8 sm:text-[16vw] md:mt-10 md:text-[13vw] lg:text-[11vw]"
       >
         {name}
       </p>

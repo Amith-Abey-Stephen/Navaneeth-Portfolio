@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, ArrowUpRight, Check, Copy, FileText } from "lucide-react";
 import type { ContactInfo } from "@/lib/types";
 import { ButtonIcon, GridLines, LinkedInIcon, MagneticButton, ScrollReveal } from "./ui";
@@ -24,6 +24,54 @@ type Channel = { key: string; label: string; action: string; href: string; icon:
  */
 export function Contact({ contact }: { contact: ContactInfo }) {
   const [copied, setCopied] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+  const targetPos = useRef({ x: 140, y: 140 });
+  const currentPos = useRef({ x: 140, y: 140 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    let animId: number;
+    const update = () => {
+      // Ultra-smooth delayed follow lerp (0.045 factor creates a fluid, floating liquid feel)
+      const factor = 0.045;
+      currentPos.current.x += (targetPos.current.x - currentPos.current.x) * factor;
+      currentPos.current.y += (targetPos.current.y - currentPos.current.y) * factor;
+
+      if (glowRef.current) {
+        glowRef.current.style.transform = `translate3d(${currentPos.current.x}px, ${currentPos.current.y}px, 0)`;
+      }
+      animId = requestAnimationFrame(update);
+    };
+    animId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    targetPos.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  };
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsHovered(true);
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      targetPos.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    // Smoothly drift back toward the card center/left
+    targetPos.current = { x: 180, y: 160 };
+  };
 
   const copyEmail = async () => {
     try {
@@ -67,19 +115,32 @@ export function Contact({ contact }: { contact: ContactInfo }) {
         Contact
       </p>
 
-      <div className="relative mx-auto max-w-[1240px] px-5 pb-16 sm:px-6 md:px-12 md:pb-20">
+      <div className="relative mx-auto mt-8 max-w-[1240px] px-5 pb-16 sm:mt-12 sm:px-6 md:mt-16 md:px-12 md:pb-20 lg:mt-20">
         <ScrollReveal>
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl">
-            {/* the aurora hairline the journey line and the Experience highlights
-                use — this card is the last stop on the same route */}
+          <div
+            ref={cardRef}
+            onMouseMove={handleMouseMove}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl"
+          >
+            {/* Pure warm orange top hairline — zero mixed colors */}
             <div
               aria-hidden
-              className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-[#34ffb5] via-[#a855f7] to-[#ffb03a] opacity-60"
+              className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ff5a1a]/80 to-transparent"
             />
-            {/* one warm wash so the glass doesn't sit flat on the canvas */}
+
+            {/* Pure warm orange glow with buttery delayed cursor follow — strictly contained in card */}
             <div
+              ref={glowRef}
               aria-hidden
-              className="pointer-events-none absolute -left-16 -top-24 h-64 w-64 rounded-full bg-[#ff4a1a]/20 blur-[80px] md:h-80 md:w-80 md:blur-[100px]"
+              className="pointer-events-none absolute -left-[280px] -top-[280px] h-[560px] w-[560px] rounded-full transition-opacity duration-700 ease-out will-change-transform"
+              style={{
+                opacity: isHovered ? 1 : 0.28,
+                background:
+                  "radial-gradient(circle, rgba(255, 90, 26, 0.38) 0%, rgba(255, 110, 35, 0.22) 32%, rgba(255, 130, 45, 0.08) 55%, transparent 75%)",
+                transform: "translate3d(180px, 160px, 0)",
+              }}
             />
 
             <div
