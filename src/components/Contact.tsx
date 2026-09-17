@@ -75,7 +75,7 @@ export function Contact({ contact }: { contact: ContactInfo }) {
 
   const copyEmail = async () => {
     try {
-      await navigator.clipboard.writeText(contact.email);
+      await navigator.clipboard.writeText(contact.email.trim());
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {}
@@ -159,7 +159,7 @@ export function Contact({ contact }: { contact: ContactInfo }) {
                   way to reach me.
                 </p>
                 <div className="mt-7 grid grid-cols-1 sm:flex md:mt-8">
-                  <MagneticButton href={`mailto:${contact.email}`} className={PRIMARY_BUTTON}>
+                  <MagneticButton href={`mailto:${contact.email.trim()}`} className={PRIMARY_BUTTON}>
                     Send an email
                     <ButtonIcon hover={{ x: 2, y: -2 }}>
                       <ArrowUpRight size={17} strokeWidth={2.2} />

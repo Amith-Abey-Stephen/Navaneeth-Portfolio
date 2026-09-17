@@ -11,14 +11,14 @@ import { GhostTitle } from "./GhostTitle";
  * Skill groups as the reference's divided rows: category on the left with
  * a superscript index, the skills on the right as the frosted tag chips.
  */
-export function SkillsSection({ items }: { items: SkillGroup[] }) {
+export function SkillsSection({ items, title }: { items: SkillGroup[]; title?: string }) {
   return (
     <section
       id="skills"
       className="relative scroll-mt-24 overflow-hidden bg-transparent px-5 pb-10 pt-6 sm:px-6 md:px-12 md:pt-10"
     >
       <GridLines />
-      <GhostTitle>Skills</GhostTitle>
+      <GhostTitle>{title || "Skills"}</GhostTitle>
       <div className="relative z-[2] mx-auto mt-4 max-w-[1440px] md:mt-8">
         {items.map((g, i) => (
           <SkillRow key={g.id} group={g} index={i} />

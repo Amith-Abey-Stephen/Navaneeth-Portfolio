@@ -59,6 +59,18 @@ export function sanitizeContent(content: SiteContent): SiteContent {
       ? {
           ...content.settings,
           favicon: optionalImg(content.settings.favicon),
+          customCompanies: content.settings.customCompanies?.map((c) => ({
+            ...c,
+            logo: optionalImg(c.logo),
+          })),
+          companyOverrides: content.settings.companyOverrides
+            ? Object.fromEntries(
+                Object.entries(content.settings.companyOverrides).map(([k, v]) => [
+                  k,
+                  { ...v, customLogo: optionalImg(v.customLogo) },
+                ]),
+              )
+            : undefined,
           seo: content.settings.seo
             ? {
                 ...content.settings.seo,

@@ -13,7 +13,7 @@ import { GhostTitle } from "./GhostTitle";
  * hashtag tags. The journey line (site/JourneyFlow, mounted in PublicSite)
  * runs behind this section at z-1, which is why the content sits at z-2.
  */
-export function ExperienceSection({ items }: { items: ExperienceItem[] }) {
+export function ExperienceSection({ items, title }: { items: ExperienceItem[]; title?: string }) {
   return (
     <section
       id="experience"
@@ -21,7 +21,7 @@ export function ExperienceSection({ items }: { items: ExperienceItem[] }) {
     >
       <GridLines />
       <div className="relative z-[2]">
-        <GhostTitle>Experience</GhostTitle>
+        <GhostTitle>{title || "Experience"}</GhostTitle>
       </div>
 
       <div className="relative z-[2] mx-auto mt-4 max-w-[1440px] md:mt-8">

@@ -14,7 +14,7 @@ export function Footer({
   // The same ContactInfo the hero, nav and contact section read — the phone
   // number is deliberately never one of these links.
   const links = [
-    { label: "Email", href: `mailto:${contact.email}` },
+    { label: "Email", href: `mailto:${contact.email.trim()}` },
     contact.linkedinUrl ? { label: "LinkedIn", href: contact.linkedinUrl, external: true } : null,
     contact.resumeUrl ? { label: "Resume", href: contact.resumeUrl, external: true } : null,
   ].filter((l): l is { label: string; href: string; external?: boolean } => Boolean(l));
@@ -65,7 +65,7 @@ export function Footer({
         {name}
       </p>
       <div className="mt-4 flex flex-col items-center justify-center gap-2 px-5 text-center font-heading text-[12px] leading-relaxed text-white/35 sm:flex-row sm:gap-3">
-        <span>© {new Date().getFullYear()} {name}. All rights reserved.</span>
+        <span>{settings?.copyrightText?.trim() || `© ${new Date().getFullYear()} ${name}. All rights reserved.`}</span>
         {dev.enabled && (
           <>
             <span className="hidden text-white/20 sm:inline" aria-hidden>

@@ -19,21 +19,23 @@ export function FieldShell({
   hint,
   counter,
   children,
+  as: Component = "label",
 }: {
   label: string;
   hint?: string;
   counter?: React.ReactNode;
   children: React.ReactNode;
+  as?: "label" | "div";
 }) {
   return (
-    <label className="block">
+    <Component className="block">
       <span className="flex items-baseline justify-between gap-3">
         <span className="text-sm font-medium text-ink">{label}</span>
         {counter}
       </span>
       <span className="mt-1.5 block">{children}</span>
       {hint && <span className="mt-1.5 block text-xs text-muted">{hint}</span>}
-    </label>
+    </Component>
   );
 }
 

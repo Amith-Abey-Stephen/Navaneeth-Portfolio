@@ -18,7 +18,7 @@ const LEVEL_CHIP: Record<ProficiencyLevel, string> = {
  * phones, 3-up on tablets, 4-up from lg; hairline dividers that stay correct
  * for any count. Names wrap to a second line rather than truncating.
  */
-export function ToolsSection({ items }: { items: ToolItem[] }) {
+export function ToolsSection({ items, title }: { items: ToolItem[]; title?: string }) {
   return (
     <section
       id="tools"
@@ -27,7 +27,7 @@ export function ToolsSection({ items }: { items: ToolItem[] }) {
       <GridLines />
       {/* z-2: the journey line leaves the page through this heading, behind it */}
       <div className="relative z-[2]">
-        <GhostTitle>Tools</GhostTitle>
+        <GhostTitle>{title || "Tools"}</GhostTitle>
       </div>
       <ScrollReveal className="relative z-[2] mx-auto mt-2 max-w-[1240px] md:mt-6">
         <div className="overflow-hidden rounded-2xl border border-white/10">

@@ -55,7 +55,8 @@ export const PROJECT_VERTICALS = [
   "Product Teardowns",
 ] as const;
 
-export type ProjectVertical = (typeof PROJECT_VERTICALS)[number];
+export type DefaultProjectVertical = (typeof PROJECT_VERTICALS)[number];
+export type ProjectVertical = string;
 
 export type ProjectItem = {
   id: string;
@@ -104,14 +105,14 @@ export type EducationItem = {
 };
 
 export type Section =
-  | { type: "about"; visible: boolean; order: number; data: About }
-  | { type: "stats"; visible: boolean; order: number; items: StatItem[] }
-  | { type: "experience"; visible: boolean; order: number; items: ExperienceItem[] }
-  | { type: "projects"; visible: boolean; order: number; items: ProjectItem[] }
-  | { type: "tools"; visible: boolean; order: number; items: ToolItem[] }
-  | { type: "skills"; visible: boolean; order: number; items: SkillGroup[] }
-  | { type: "certifications"; visible: boolean; order: number; items: CertificationItem[] }
-  | { type: "education"; visible: boolean; order: number; items: EducationItem[] };
+  | { type: "about"; visible: boolean; order: number; label?: string; data: About }
+  | { type: "stats"; visible: boolean; order: number; label?: string; items: StatItem[] }
+  | { type: "experience"; visible: boolean; order: number; label?: string; items: ExperienceItem[] }
+  | { type: "projects"; visible: boolean; order: number; label?: string; items: ProjectItem[] }
+  | { type: "tools"; visible: boolean; order: number; label?: string; items: ToolItem[] }
+  | { type: "skills"; visible: boolean; order: number; label?: string; items: SkillGroup[] }
+  | { type: "certifications"; visible: boolean; order: number; label?: string; items: CertificationItem[] }
+  | { type: "education"; visible: boolean; order: number; label?: string; items: EducationItem[] };
 
 export type SectionType = Section["type"];
 
@@ -134,19 +135,37 @@ export type SeoSettings = {
   googleVerification?: string;
   bingVerification?: string;
   gaMeasurementId?: string;
+  clarityProjectId?: string;
   geoRegion?: string;
   geoPlacename?: string;
   developerCredit?: DeveloperCredit;
 };
 
+export type CustomCompany = {
+  id: string;
+  name: string;
+  logo?: ImageRef;
+  showLogo?: boolean;
+};
+
+export type CompanyLogoOverride = {
+  showLogo?: boolean;
+  customLogo?: ImageRef;
+};
+
 /**
- * Site-level settings added in the V2 pass. Every field is optional so documents
+ * Site-level settings added in the V2 & V4 pass. Every field is optional so documents
  * written before it existed keep loading unchanged; a missing `settings` means
- * "use the defaults" (no custom favicon, marquee derived from Experience).
+ * "use the defaults".
  */
 export type SiteSettings = {
   favicon?: ImageRef; // "1:1" — the browser-tab icon, follows draft → publish
-  marquee?: string[]; // company names for the running banner; undefined → derived from Experience
+  marquee?: string[]; // legacy field: company names for running banner
+  customCompanies?: CustomCompany[]; // manually added companies
+  companyOverrides?: Record<string, CompanyLogoOverride>; // per-company logo configuration
+  copyrightText?: string; // editable copyright line in footer
+  projectCategories?: string[]; // custom categories registry
+  palette?: string; // selected color palette id
   seo?: SeoSettings;
 };
 
@@ -181,6 +200,11 @@ export const SECTION_LABELS: Record<SectionType, string> = {
   certifications: "Certifications",
   education: "Education",
 };
+
+/** Get the effective display label of a section, falling back to default label. */
+export function getSectionLabel(section: { type: SectionType; label?: string }): string {
+  return section.label?.trim() || SECTION_LABELS[section.type];
+}
 
 /** True when a section has nothing to show — such sections never render publicly. */
 export function sectionIsEmpty(section: Section): boolean {

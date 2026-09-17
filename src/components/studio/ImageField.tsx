@@ -118,7 +118,7 @@ export function ImageField({
   }
 
   return (
-    <FieldShell label={label} hint={enabled ? `Cropped to ${ratio}` : "Connect Supabase to upload images."}>
+    <FieldShell as="div" label={label} hint={enabled ? `Cropped to ${ratio}` : "Connect Supabase to upload images."}>
       <div className="flex flex-wrap items-center gap-4">
         <div
           className={`${RATIO_CLASS[ratio]} flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-bg`}

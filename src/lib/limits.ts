@@ -13,7 +13,9 @@ export const CHAR_LIMITS = {
   skillGroup: { category: 40, skill: 40 },
   certification: { title: 90, issuer: 50 },
   education: { degree: 110, institution: 70 },
-  marquee: { company: 60 }, // same cap as an experience company name
+  copyright: 120,
+  projectCategory: 50,
+  sectionLabel: 40,
   seo: {
     metaTitle: 70,
     metaDescription: 320,
@@ -26,6 +28,7 @@ export const CHAR_LIMITS = {
     googleVerification: 100,
     bingVerification: 100,
     gaMeasurementId: 30,
+    clarityProjectId: 50,
     geoRegion: 20,
     geoPlacename: 60,
   },

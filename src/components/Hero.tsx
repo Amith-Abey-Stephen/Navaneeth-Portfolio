@@ -75,7 +75,7 @@ export function Hero({
       {/* giant name — scrolls naturally with the page like the
           reference (no parallax / fade, so it never lingers or pops) */}
       <div
-        className="pointer-events-none relative z-[5] mx-auto w-full max-w-[1500px] select-none px-4 pt-24 sm:px-6 md:px-8 md:pt-20"
+        className="pointer-events-none relative z-[5] mx-auto w-full max-w-[1500px] select-none px-4 pt-28 sm:px-6 sm:pt-32 md:px-8 md:pt-28 lg:pt-32"
         style={nameStyle}
       >
         <motion.div

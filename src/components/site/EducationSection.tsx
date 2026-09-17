@@ -12,14 +12,14 @@ import { GhostTitle } from "./GhostTitle";
  * reference's black meta pill (institution · years) — the same pill the
  * Experience rows use, so the two sections read as one system.
  */
-export function EducationSection({ items }: { items: EducationItem[] }) {
+export function EducationSection({ items, title }: { items: EducationItem[]; title?: string }) {
   return (
     <section
       id="education"
       className="relative scroll-mt-24 overflow-hidden bg-transparent px-5 pb-10 pt-6 sm:px-6 md:px-12 md:pt-10"
     >
       <GridLines />
-      <GhostTitle>Education</GhostTitle>
+      <GhostTitle>{title || "Education"}</GhostTitle>
       <div className="relative z-[2] mx-auto mt-4 max-w-[1440px] md:mt-8">
         {items.map((e, i) => (
           <EducationRow key={e.id} item={e} index={i} />

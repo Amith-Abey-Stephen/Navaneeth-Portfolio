@@ -216,6 +216,56 @@ body {
 }
 
 /* ————————————————————————————————————————————————————————————————
+   Curated Color Palettes (Studio → Site Settings → Color Palette)
+   Token-based visual layer preserving layout, typography & motion
+   ———————————————————————————————————————————————————————————————— */
+[data-palette="graphite"] {
+  --color-bg: #0a0b0d;
+  --color-bg-alt: #14161a;
+  --color-card: #181b20;
+  --color-accent: #f1f5f9;
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-text-mute: rgba(255, 255, 255, 0.65);
+  --color-text-sub: rgba(255, 255, 255, 0.88);
+}
+[data-palette="midnight"] {
+  --color-bg: #040711;
+  --color-bg-alt: #0b1021;
+  --color-card: #0f172a;
+  --color-accent: #38bdf8;
+  --color-border: rgba(56, 189, 248, 0.14);
+  --color-text-mute: rgba(224, 242, 254, 0.62);
+  --color-text-sub: rgba(224, 242, 254, 0.84);
+}
+[data-palette="emerald"] {
+  --color-bg: #040d08;
+  --color-bg-alt: #08170f;
+  --color-card: #0d2217;
+  --color-accent: #10b981;
+  --color-border: rgba(52, 211, 153, 0.14);
+  --color-text-mute: rgba(209, 250, 229, 0.62);
+  --color-text-sub: rgba(209, 250, 229, 0.84);
+}
+[data-palette="warm-clay"] {
+  --color-bg: #0d0a08;
+  --color-bg-alt: #17120e;
+  --color-card: #1f1914;
+  --color-accent: #f59e0b;
+  --color-border: rgba(251, 191, 36, 0.12);
+  --color-text-mute: rgba(254, 243, 199, 0.60);
+  --color-text-sub: rgba(254, 243, 199, 0.82);
+}
+[data-palette="editorial-crimson"] {
+  --color-bg: #0a0607;
+  --color-bg-alt: #150c0e;
+  --color-card: #1c1013;
+  --color-accent: #f43f5e;
+  --color-border: rgba(244, 63, 94, 0.14);
+  --color-text-mute: rgba(255, 228, 230, 0.60);
+  --color-text-sub: rgba(255, 228, 230, 0.82);
+}
+
+/* ————————————————————————————————————————————————————————————————
    Content studio (/studio) — a light, form-first workspace. Its palette is
    scoped under .theme-studio so the public site's dark tokens above are
    untouched: every color utility resolves its var() at point of use, so

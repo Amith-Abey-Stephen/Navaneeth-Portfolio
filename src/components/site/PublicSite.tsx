@@ -1,6 +1,6 @@
 import type { Section, SectionType, SiteContent } from "@/lib/types";
 import { renderableSections, SECTION_LABELS } from "@/lib/types";
-import { marqueeLogo, marqueeNames } from "@/lib/marquee";
+import { getBannerStripItems, marqueeLogo, marqueeNames } from "@/lib/marquee";
 import { sanitizeContent } from "@/lib/urls";
 import { Navbar, type NavCta, type NavLink } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
@@ -20,24 +20,25 @@ import { EducationSection } from "./EducationSection";
 import { JourneyFlow } from "./JourneyFlow";
 import { SiteProviders } from "./SiteProviders";
 
-function renderSection(section: Section) {
+function renderSection(section: Section, categories?: string[]) {
+  const title = section.label?.trim() || SECTION_LABELS[section.type];
   switch (section.type) {
     case "about":
       return <AboutIntro key="about" data={section.data} />;
     case "stats":
       return <StatsSection key="stats" items={section.items} />;
     case "experience":
-      return <ExperienceSection key="experience" items={section.items} />;
+      return <ExperienceSection key="experience" title={title} items={section.items} />;
     case "projects":
-      return <Projects key="projects" items={section.items} />;
+      return <Projects key="projects" title={title} items={section.items} categories={categories} />;
     case "tools":
-      return <ToolsSection key="tools" items={section.items} />;
+      return <ToolsSection key="tools" title={title} items={section.items} />;
     case "skills":
-      return <SkillsSection key="skills" items={section.items} />;
+      return <SkillsSection key="skills" title={title} items={section.items} />;
     case "certifications":
-      return <CertificationsSection key="certifications" items={section.items} />;
+      return <CertificationsSection key="certifications" title={title} items={section.items} />;
     case "education":
-      return <EducationSection key="education" items={section.items} />;
+      return <EducationSection key="education" title={title} items={section.items} />;
   }
 }
 
@@ -87,7 +88,7 @@ export function PublicSite({
       .map((s) => ({
         id: s.type,
         href: `#${s.type}`,
-        label: s.type === "projects" ? "Work" : SECTION_LABELS[s.type],
+        label: s.label?.trim() || (s.type === "projects" ? "Work" : SECTION_LABELS[s.type]),
       })),
     { id: "contact", href: "#contact", label: "Contact" },
   ];
@@ -98,11 +99,7 @@ export function PublicSite({
   const brand = hero.name.trim().split(/\s+/)[0] || hero.name;
 
   // The hero's running banner: the studio's company list, or — until the
-  // owner sets one — the companies from Experience (see lib/marquee).
-  const strip: StripItem[] = marqueeNames(content).map((name) => ({
-    label: name,
-    src: marqueeLogo(content, name),
-  }));
+  const strip: StripItem[] = getBannerStripItems(content);
 
   return (
     <SiteProviders>
@@ -113,16 +110,19 @@ export function PublicSite({
       >
         Skip to content
       </a>
-      <div className="relative min-h-screen bg-[#070708] text-white">
+      <div
+        data-palette={content.settings?.palette || "default"}
+        className="relative min-h-screen bg-[var(--color-bg,#070708)] text-white transition-colors duration-500"
+      >
         {/* single continuous background canvas — all sections sit transparent over it */}
-        <SiteCanvas />
+        <SiteCanvas palette={content.settings?.palette} />
         <div className="relative">
           <Navbar links={links} brand={brand} cta={cta} />
           <main id="main" className="relative">
             {/* the journey line: Experience → Projects → Tools, behind the sections' content */}
             <JourneyFlow />
             <Hero hero={hero} contact={contact} strip={strip} />
-            {sections.map(renderSection)}
+            {sections.map((s) => renderSection(s, content.settings?.projectCategories))}
             <Contact contact={contact} />
           </main>
           <Footer name={hero.name} contact={contact} settings={content.settings} />
