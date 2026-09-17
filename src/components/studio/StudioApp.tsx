@@ -433,6 +433,14 @@ export function StudioApp() {
           ? "Saved"
           : "";
 
+  function getScreenLabel(key: Screen): string {
+    if (draft?.sections) {
+      const section = draft.sections.find((s) => s.type === key);
+      if (section?.label?.trim()) return section.label.trim();
+    }
+    return SCREEN_TITLES[key] ?? key;
+  }
+
   function renderScreen() {
     switch (screen) {
       case "overview":
@@ -548,7 +556,14 @@ export function StudioApp() {
       case "projects": {
         const s = section("projects");
         return s ? (
-          <ProjectsForm items={s.items} onChange={(items) => patchSection("projects", { items })} />
+          <ProjectsForm
+            items={s.items}
+            categories={draft?.settings?.projectCategories}
+            onCategoriesChange={(projectCategories) =>
+              setDraft((d) => (d ? { ...d, settings: { ...d.settings, projectCategories } } : d))
+            }
+            onChange={(items) => patchSection("projects", { items })}
+          />
         ) : null;
       }
       case "tools": {
@@ -583,7 +598,7 @@ export function StudioApp() {
           <span className="text-sm font-semibold">Content studio</span>
         </div>
         <nav className="mt-6 flex-1 space-y-0.5" aria-label="Studio">
-          {NAV.map(({ key, label, Icon }) => (
+          {NAV.map(({ key, Icon }) => (
             <button
               key={key}
               type="button"
@@ -594,7 +609,7 @@ export function StudioApp() {
               }`}
             >
               <Icon className="h-4 w-4" strokeWidth={2} />
-              {label}
+              {getScreenLabel(key)}
             </button>
           ))}
         </nav>
@@ -625,12 +640,12 @@ export function StudioApp() {
               >
                 {NAV.map((n) => (
                   <option key={n.key} value={n.key}>
-                    {n.label}
+                    {getScreenLabel(n.key)}
                   </option>
                 ))}
               </select>
               <h1 className="hidden truncate text-base font-semibold md:block">
-                {SCREEN_TITLES[screen]}
+                {getScreenLabel(screen)}
               </h1>
               <span
                 className={`hidden text-xs sm:block ${saveState === "error" ? "text-danger" : "text-muted"}`}

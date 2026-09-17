@@ -172,7 +172,7 @@ export function JourneyFlow() {
             stroke="url(#journey-flow)"
             strokeWidth={mobile ? 4.5 : 6}
             strokeLinecap="round"
-            opacity={0.07}
+            opacity={0.14}
             style={{ pathLength: drawn }}
           />
           {/* the line */}
@@ -182,7 +182,7 @@ export function JourneyFlow() {
             stroke="url(#journey-flow)"
             strokeWidth={mobile ? 1.2 : 1.5}
             strokeLinecap="round"
-            opacity={mobile ? 0.26 : 0.42}
+            opacity={mobile ? 0.38 : 0.58}
             style={{ pathLength: drawn }}
           />
         </svg>
@@ -296,14 +296,14 @@ function journeyPath(l: Layout, mobile: boolean): string {
     let cp1: Pt;
 
     if (i === 0) {
-      // Smooth organic entrance: gentle sweeping curve coming in from outside the screen
+      // Smooth organic entrance: broad circular rounded sweep coming gently into the page
       cp0 = {
-        x: p0.x + Math.max(Math.abs(dx) * 0.36, 48),
-        y: p0.y + dy * 0.12,
+        x: p0.x + dx * 0.45,
+        y: p0.y + dy * 0.08,
       };
       cp1 = {
-        x: p1.x,
-        y: p1.y - dy * 0.36,
+        x: p1.x - dx * 0.12,
+        y: p1.y - dy * 0.42,
       };
     } else if (i + 1 === lastIndex) {
       // Smooth organic exit: curves gracefully out off-screen

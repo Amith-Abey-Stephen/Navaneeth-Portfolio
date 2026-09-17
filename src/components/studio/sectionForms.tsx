@@ -1,14 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { CHAR_LIMITS, ITEM_LIMITS } from "@/lib/limits";
-import { experienceCompanies, marqueeIsCustom, marqueeNames } from "@/lib/marquee";
+import { experienceCompanies, marqueeIsCustom, marqueeNames, getBannerCompanies, type BannerCompanyItem } from "@/lib/marquee";
+import { COLOR_PALETTES } from "@/lib/palettes";
 import type {
   About,
   CertificationItem,
+  CompanyLogoOverride,
   ContactInfo,
+  CustomCompany,
   EducationItem,
   ExperienceItem,
   Hero,
+  ImageRef,
   ProjectItem,
   Section,
   SeoSettings,
@@ -21,6 +26,8 @@ import type {
 import { PROFICIENCY_LEVELS, PROJECT_VERTICALS, SECTION_LABELS } from "@/lib/types";
 import {
   BarChart3,
+  Building2,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -28,9 +35,13 @@ import {
   EyeOff,
   Globe,
   MapPin,
+  Palette,
+  Plus,
   RotateCcw,
   Share2,
   Sparkles,
+  Trash2,
+  X,
 } from "lucide-react";
 import {
   DEFAULT_CANONICAL_URL,
@@ -283,91 +294,251 @@ export function ExperienceForm({
 
 export function ProjectsForm({
   items,
+  categories,
+  onCategoriesChange,
   onChange,
 }: {
   items: ProjectItem[];
+  categories?: string[];
+  onCategoriesChange?: (cats: string[] | undefined) => void;
   onChange: (i: ProjectItem[]) => void;
 }) {
+  const [newCat, setNewCat] = useState("");
+  const [catError, setCatError] = useState<string | null>(null);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editingVal, setEditingVal] = useState("");
+
+  const effectiveCategories =
+    categories && categories.length > 0 ? categories : [...PROJECT_VERTICALS];
+
+  function handleAddCategory(e: React.FormEvent) {
+    e.preventDefault();
+    setCatError(null);
+    const trimmed = newCat.trim();
+    if (!trimmed) return;
+    if (trimmed.length > CHAR_LIMITS.projectCategory) {
+      setCatError(`Category must be ${CHAR_LIMITS.projectCategory} characters or less.`);
+      return;
+    }
+    if (effectiveCategories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      setCatError("This category already exists.");
+      return;
+    }
+    const next = [...effectiveCategories, trimmed];
+    onCategoriesChange?.(next);
+    setNewCat("");
+  }
+
+  function handleRenameCategory(index: number) {
+    const trimmed = editingVal.trim();
+    setEditingIdx(null);
+    if (!trimmed) return;
+    const oldCat = effectiveCategories[index];
+    if (oldCat === trimmed) return;
+    if (effectiveCategories.some((c, i) => i !== index && c.toLowerCase() === trimmed.toLowerCase())) {
+      return;
+    }
+    const next = [...effectiveCategories];
+    next[index] = trimmed;
+    onCategoriesChange?.(next);
+
+    const updatedItems = items.map((p) => (p.vertical === oldCat ? { ...p, vertical: trimmed } : p));
+    onChange(updatedItems);
+  }
+
+  function handleDeleteCategory(index: number) {
+    if (effectiveCategories.length <= 1) return;
+    const catToRemove = effectiveCategories[index];
+    const next = effectiveCategories.filter((_, i) => i !== index);
+    onCategoriesChange?.(next);
+
+    const fallback = next[0];
+    const updatedItems = items.map((p) =>
+      p.vertical === catToRemove ? { ...p, vertical: fallback } : p
+    );
+    onChange(updatedItems);
+  }
+
   return (
-    <EntityList
-      items={items}
-      onChange={onChange}
-      max={ITEM_LIMITS.projects}
-      addLabel="Add project"
-      emptyLabel="Nothing here yet — add your first project."
-      create={(): ProjectItem => ({
-        id: newId("proj"),
-        vertical: PROJECT_VERTICALS[0],
-        title: "",
-        coverImage: { url: "", aspectRatio: "16:9" },
-        overview: "",
-      })}
-      itemTitle={(p) => p.title}
-      renderFields={(item, update) => (
-        <div className="space-y-4">
-          <SelectField
-            label="Vertical"
-            value={item.vertical}
-            options={PROJECT_VERTICALS}
-            onChange={(vertical) => update({ vertical })}
-          />
-          <TextField
-            label="Title"
-            value={item.title}
-            max={CHAR_LIMITS.project.title}
-            onChange={(title) => update({ title })}
-          />
-          <ImageField
-            label="Cover image"
-            image={item.coverImage}
-            ratio="16:9"
-            pathPrefix={`cover-${item.id}`}
-            onChange={(coverImage) =>
-              update({ coverImage: coverImage ?? { url: "", aspectRatio: "16:9" } })
-            }
-          />
-          <TextAreaField
-            label="Overview"
-            value={item.overview}
-            max={CHAR_LIMITS.project.overview}
-            rows={5}
-            onChange={(overview) => update({ overview })}
-          />
-          <TextAreaField
-            label="Results & impact (optional)"
-            value={item.resultsAndImpact ?? ""}
-            max={CHAR_LIMITS.project.resultsAndImpact}
-            rows={4}
-            onChange={(v) => update({ resultsAndImpact: v || undefined })}
-          />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TextField
-              label="Live URL (optional)"
-              type="url"
-              placeholder="https://…"
-              value={item.liveUrl ?? ""}
-              onChange={(v) => update({ liveUrl: v || undefined })}
-            />
-            <TextField
-              label="Case study URL (optional)"
-              type="url"
-              placeholder="https://…"
-              hint="Where the case study link should go."
-              value={item.caseStudyUrl ?? ""}
-              onChange={(v) => update({ caseStudyUrl: v || undefined })}
-            />
+    <div className="space-y-6">
+      <div className="rounded-[16px] border border-line bg-surface/50 p-4 sm:p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-semibold text-ink">Project Categories & Verticals</h3>
+            <p className="mt-0.5 text-xs text-muted">
+              Projects on your public site are grouped by these categories.
+            </p>
           </div>
-          <StringListEditor
-            label="Tags"
-            values={item.tags ?? []}
-            maxItems={ITEM_LIMITS.projectTags}
-            maxChars={CHAR_LIMITS.project.tag}
-            addLabel="Add tag"
-            onChange={(tags) => update({ tags: tags.length ? tags : undefined })}
-          />
+          {categories && categories.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onCategoriesChange?.(undefined)}
+              className="inline-flex items-center gap-1 text-xs text-muted hover:text-ink transition-colors"
+              title="Reset to default categories"
+            >
+              <RotateCcw className="h-3 w-3" />
+              Reset defaults
+            </button>
+          )}
         </div>
-      )}
-    />
+
+        <div className="mt-3.5 flex flex-wrap gap-2">
+          {effectiveCategories.map((cat, idx) => (
+            <div
+              key={idx}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1 text-xs font-medium text-ink shadow-sm"
+            >
+              {editingIdx === idx ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleRenameCategory(idx);
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <input
+                    type="text"
+                    value={editingVal}
+                    onChange={(e) => setEditingVal(e.target.value)}
+                    onBlur={() => handleRenameCategory(idx)}
+                    autoFocus
+                    className="h-6 w-28 rounded border border-accent bg-bg px-1.5 text-xs text-ink focus:outline-none"
+                    maxLength={CHAR_LIMITS.projectCategory}
+                  />
+                </form>
+              ) : (
+                <span
+                  onClick={() => {
+                    setEditingIdx(idx);
+                    setEditingVal(cat);
+                  }}
+                  className="cursor-pointer hover:underline"
+                  title="Click to rename"
+                >
+                  {cat}
+                </span>
+              )}
+              {effectiveCategories.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteCategory(idx)}
+                  className="ml-0.5 text-muted hover:text-warning transition-colors"
+                  title={`Remove ${cat}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <form onSubmit={handleAddCategory} className="mt-3 flex items-center gap-2">
+          <input
+            type="text"
+            value={newCat}
+            onChange={(e) => setNewCat(e.target.value)}
+            placeholder="Add new category…"
+            maxLength={CHAR_LIMITS.projectCategory}
+            className="h-8 max-w-xs flex-1 rounded-lg border border-line bg-surface px-2.5 text-xs text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={!newCat.trim()}
+            className="inline-flex h-8 items-center gap-1 rounded-lg border border-line bg-surface px-2.5 text-xs font-medium text-ink transition-colors hover:bg-surface/80 disabled:opacity-40"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add category
+          </button>
+        </form>
+        {catError && <p className="mt-1.5 text-xs text-warning">{catError}</p>}
+      </div>
+
+      <EntityList
+        items={items}
+        onChange={onChange}
+        max={ITEM_LIMITS.projects}
+        addLabel="Add project"
+        emptyLabel="Nothing here yet — add your first project."
+        create={(): ProjectItem => ({
+          id: newId("proj"),
+          vertical: effectiveCategories[0] ?? PROJECT_VERTICALS[0],
+          title: "",
+          coverImage: { url: "", aspectRatio: "16:9" },
+          overview: "",
+        })}
+        itemTitle={(p) => p.title}
+        renderFields={(item, update) => {
+          const allCategoryOptions = Array.from(
+            new Set([...effectiveCategories, item.vertical])
+          ).filter(Boolean);
+
+          return (
+            <div className="space-y-4">
+              <SelectField
+                label="Category / Vertical"
+                value={item.vertical}
+                options={allCategoryOptions}
+                onChange={(vertical) => update({ vertical })}
+              />
+              <TextField
+                label="Title"
+                value={item.title}
+                max={CHAR_LIMITS.project.title}
+                onChange={(title) => update({ title })}
+              />
+              <ImageField
+                label="Cover image"
+                image={item.coverImage}
+                ratio="16:9"
+                pathPrefix={`cover-${item.id}`}
+                onChange={(coverImage) =>
+                  update({ coverImage: coverImage ?? { url: "", aspectRatio: "16:9" } })
+                }
+              />
+              <TextAreaField
+                label="Overview"
+                value={item.overview}
+                max={CHAR_LIMITS.project.overview}
+                rows={5}
+                onChange={(overview) => update({ overview })}
+              />
+              <TextAreaField
+                label="Results & impact (optional)"
+                value={item.resultsAndImpact ?? ""}
+                max={CHAR_LIMITS.project.resultsAndImpact}
+                rows={4}
+                onChange={(v) => update({ resultsAndImpact: v || undefined })}
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TextField
+                  label="Live URL (optional)"
+                  type="url"
+                  placeholder="https://…"
+                  value={item.liveUrl ?? ""}
+                  onChange={(v) => update({ liveUrl: v || undefined })}
+                />
+                <TextField
+                  label="Case study URL (optional)"
+                  type="url"
+                  placeholder="https://…"
+                  hint="Where the case study link should go."
+                  value={item.caseStudyUrl ?? ""}
+                  onChange={(v) => update({ caseStudyUrl: v || undefined })}
+                />
+              </div>
+              <StringListEditor
+                label="Tags"
+                values={item.tags ?? []}
+                maxItems={ITEM_LIMITS.projectTags}
+                maxChars={CHAR_LIMITS.project.tag}
+                addLabel="Add tag"
+                onChange={(tags) => update({ tags: tags.length ? tags : undefined })}
+              />
+            </div>
+          );
+        }}
+      />
+    </div>
   );
 }
 
@@ -627,8 +798,28 @@ export function SectionsManager({
             </button>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">{SECTION_LABELS[s.type]}</p>
-            <p className="text-xs text-muted">
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="text"
+                aria-label={`Display name for ${SECTION_LABELS[s.type]}`}
+                value={s.label ?? ""}
+                placeholder={SECTION_LABELS[s.type]}
+                maxLength={CHAR_LIMITS.sectionLabel}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onChange(
+                    sections.map((x) =>
+                      x.type === s.type ? { ...x, label: val ? val : undefined } : x,
+                    ),
+                  );
+                }}
+                className="w-full max-w-[200px] rounded-lg border border-line bg-bg/60 px-2.5 py-1 text-sm font-semibold text-ink placeholder:text-muted/60 transition-colors focus:border-accent focus:bg-surface focus:outline-none sm:max-w-[240px]"
+              />
+              {s.label && s.label.trim() !== SECTION_LABELS[s.type] && (
+                <span className="text-[11px] text-muted">({SECTION_LABELS[s.type]})</span>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-muted">
               {[itemCount(s), s.visible ? "Shown" : "Hidden"].filter(Boolean).join(" · ")}
             </p>
           </div>
@@ -668,21 +859,285 @@ export function SiteSettingsForm({
   onChange: (settings: SiteSettings | undefined) => void;
 }) {
   const settings = content.settings ?? {};
-  const custom = marqueeIsCustom(content);
-  const names = marqueeNames(content);
-  const derived = experienceCompanies(content);
+  const bannerCompanies = getBannerCompanies(content);
+  const [newCompName, setNewCompName] = useState("");
+  const [editingLogoCompany, setEditingLogoCompany] = useState<string | null>(null);
 
   function commit(patch: Partial<SiteSettings>) {
     const next: SiteSettings = { ...settings, ...patch };
-    const empty = !next.favicon?.url && !Array.isArray(next.marquee);
+    const empty =
+      !next.favicon?.url &&
+      !Array.isArray(next.marquee) &&
+      !next.customCompanies?.length &&
+      (!next.companyOverrides || Object.keys(next.companyOverrides).length === 0) &&
+      !next.copyrightText &&
+      !next.projectCategories?.length &&
+      !next.palette &&
+      !next.seo;
     onChange(empty ? undefined : next);
+  }
+
+  function handleAddCustomCompany(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = newCompName.trim();
+    if (!trimmed) return;
+    if (trimmed.length > CHAR_LIMITS.experience.company) return;
+    const newComp: CustomCompany = {
+      id: newId("comp"),
+      name: trimmed,
+      showLogo: true,
+    };
+    commit({
+      customCompanies: [...(settings.customCompanies ?? []), newComp],
+    });
+    setNewCompName("");
+  }
+
+  function handleRemoveCustomCompany(name: string) {
+    commit({
+      customCompanies: (settings.customCompanies ?? []).filter(
+        (c) => c.name.toLowerCase() !== name.toLowerCase()
+      ),
+    });
+  }
+
+  function handleToggleLogo(c: BannerCompanyItem) {
+    if (c.isCustom) {
+      commit({
+        customCompanies: (settings.customCompanies ?? []).map((comp) =>
+          comp.name.toLowerCase() === c.name.toLowerCase()
+            ? { ...comp, showLogo: !c.showLogo }
+            : comp
+        ),
+      });
+    } else {
+      const key = c.name.toLowerCase().trim();
+      const existing = settings.companyOverrides?.[key] ?? {};
+      commit({
+        companyOverrides: {
+          ...settings.companyOverrides,
+          [key]: { ...existing, showLogo: !c.showLogo },
+        },
+      });
+    }
+  }
+
+  function handleUpdateLogo(c: BannerCompanyItem, logo?: ImageRef) {
+    if (c.isCustom) {
+      commit({
+        customCompanies: (settings.customCompanies ?? []).map((comp) =>
+          comp.name.toLowerCase() === c.name.toLowerCase() ? { ...comp, logo } : comp
+        ),
+      });
+    } else {
+      const key = c.name.toLowerCase().trim();
+      const existing = settings.companyOverrides?.[key] ?? {};
+      commit({
+        companyOverrides: {
+          ...settings.companyOverrides,
+          [key]: { ...existing, customLogo: logo },
+        },
+      });
+    }
+  }
+
+  function handleResetOverride(companyName: string) {
+    const key = companyName.toLowerCase().trim();
+    const nextOverrides = { ...(settings.companyOverrides ?? {}) };
+    delete nextOverrides[key];
+    commit({
+      companyOverrides: Object.keys(nextOverrides).length > 0 ? nextOverrides : undefined,
+    });
   }
 
   return (
     <div className="space-y-8">
+      {/* Color Palette Selector */}
       <section className="space-y-4">
         <div>
-          <h3 className="text-sm font-semibold">Favicon</h3>
+          <div className="flex items-center gap-1.5">
+            <Palette className="h-4 w-4 text-accent" />
+            <h3 className="text-sm font-semibold text-ink">Color Palette & Mood</h3>
+          </div>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            Select an ambient theme for your portfolio. This sets coordinated background tones, card surfaces, borders, glow lights, and accent highlights.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {COLOR_PALETTES.map((p) => {
+            const isActive = (settings.palette ?? "default") === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => commit({ palette: p.id === "default" ? undefined : p.id })}
+                className={`flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all duration-200 ${
+                  isActive
+                    ? "border-accent bg-surface ring-1 ring-accent shadow-sm"
+                    : "border-line bg-surface/50 hover:border-ink/20 hover:bg-surface"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-ink">{p.name}</span>
+                    {isActive ? (
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-white text-[10px]">
+                        <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                      </span>
+                    ) : (
+                      <span className="h-4 w-4 rounded-full border border-line" />
+                    )}
+                  </div>
+                  <p className="mt-1 text-[11px] leading-snug text-muted line-clamp-2">
+                    {p.description}
+                  </p>
+                </div>
+                <div className="mt-3 flex items-center gap-1.5 pt-2 border-t border-line/50">
+                  {p.swatches.map((color, i) => (
+                    <span
+                      key={i}
+                      className="h-3.5 w-3.5 rounded-full border border-white/10 shadow-inner"
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Company Banner Manager */}
+      <section className="space-y-4">
+        <div>
+          <div className="flex items-center gap-1.5">
+            <Building2 className="h-4 w-4 text-accent" />
+            <h3 className="text-sm font-semibold text-ink">Company Banner (Hero Strip)</h3>
+          </div>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            Companies displayed in the hero marquee banner. Automatically synchronizes with your Experience section, and you can add custom companies or independently customize each logo.
+          </p>
+        </div>
+
+        {/* Companies list */}
+        <div className="space-y-2 rounded-xl border border-line bg-surface/40 p-3 sm:p-4">
+          {bannerCompanies.length === 0 ? (
+            <p className="text-xs text-muted">No companies to display. Add experience or custom companies below.</p>
+          ) : (
+            bannerCompanies.map((c) => {
+              const isExpanded = editingLogoCompany === c.name;
+              const hasOverride = Boolean(settings.companyOverrides?.[c.name.toLowerCase().trim()]);
+              const logoSrc = c.customLogo?.url || c.logoSrc;
+
+              return (
+                <div key={c.name} className="rounded-lg border border-line bg-surface p-2.5 transition-all">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded bg-bg border border-line">
+                        {logoSrc ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={logoSrc} alt={c.name} className="h-full w-full object-contain p-0.5" />
+                        ) : (
+                          <span className="text-[10px] font-bold text-muted">{c.name.slice(0, 2).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate text-xs font-semibold text-ink">{c.name}</span>
+                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${c.isCustom ? "bg-accent/10 text-accent" : "bg-surface/80 text-muted border border-line"}`}>
+                            {c.isCustom ? "Custom" : "Experience"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleLogo(c)}
+                        title={c.showLogo ? "Hide logo in banner" : "Show logo in banner"}
+                        className={`rounded p-1.5 text-xs transition-colors ${c.showLogo ? "text-accent bg-accent/10" : "text-muted hover:text-ink"}`}
+                      >
+                        {c.showLogo ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setEditingLogoCompany(isExpanded ? null : c.name)}
+                        title="Edit logo"
+                        className="rounded p-1.5 text-xs text-muted hover:text-ink transition-colors"
+                      >
+                        <span className="text-[11px] font-medium underline">Logo</span>
+                      </button>
+
+                      {hasOverride && (
+                        <button
+                          type="button"
+                          onClick={() => handleResetOverride(c.name)}
+                          title="Reset to original experience logo"
+                          className="rounded p-1.5 text-xs text-muted hover:text-ink transition-colors"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+
+                      {c.isCustom && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomCompany(c.name)}
+                          title="Remove custom company"
+                          className="rounded p-1.5 text-xs text-muted hover:text-warning transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="mt-3 pt-3 border-t border-line">
+                      <p className="mb-2 text-xs text-muted">Custom logo for {c.name} (1:1 square recommended):</p>
+                      <ImageField
+                        label="Logo mark"
+                        image={c.customLogo ?? (logoSrc ? { url: logoSrc, aspectRatio: "1:1" } : undefined)}
+                        ratio="1:1"
+                        maxWidth={256}
+                        pathPrefix={`banner-logo-${c.name.toLowerCase().replace(/\s+/g, "-")}`}
+                        onChange={(logo) => handleUpdateLogo(c, logo?.url ? logo : undefined)}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <form onSubmit={handleAddCustomCompany} className="flex items-center gap-2">
+          <input
+            type="text"
+            value={newCompName}
+            onChange={(e) => setNewCompName(e.target.value)}
+            placeholder="Add custom company to banner…"
+            maxLength={CHAR_LIMITS.experience.company}
+            className="h-8 max-w-sm flex-1 rounded-lg border border-line bg-surface px-2.5 text-xs text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={!newCompName.trim()}
+            className="inline-flex h-8 items-center gap-1 rounded-lg border border-line bg-surface px-2.5 text-xs font-medium text-ink transition-colors hover:bg-surface/80 disabled:opacity-40"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add company
+          </button>
+        </form>
+      </section>
+
+      {/* Favicon */}
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-ink">Favicon</h3>
           <p className="mt-1 text-sm leading-relaxed text-muted">
             The small icon in the browser tab. A square image with a simple mark works best.
             Like everything here, the tab only changes once you publish.
@@ -698,39 +1153,21 @@ export function SiteSettingsForm({
         />
       </section>
 
+      {/* Footer Copyright Notice */}
       <section className="space-y-4">
         <div>
-          <h3 className="text-sm font-semibold">Company banner</h3>
+          <h3 className="text-sm font-semibold text-ink">Footer Copyright</h3>
           <p className="mt-1 text-sm leading-relaxed text-muted">
-            The running line of company names along the bottom of the hero.{" "}
-            {custom
-              ? "This is your own list."
-              : "Right now it follows the companies in your Experience section — change anything below to take over the list."}
+            Custom copyright notice rendered at the very bottom of every page. Leave blank to automatically display current year and your name.
           </p>
         </div>
-        <StringListEditor
-          label="Companies"
-          values={names}
-          maxItems={ITEM_LIMITS.marquee}
-          maxChars={CHAR_LIMITS.marquee.company}
-          addLabel="Add company"
-          placeholder="Company name"
-          onChange={(marquee) => commit({ marquee })}
+        <TextField
+          label="Copyright notice"
+          value={settings.copyrightText ?? ""}
+          max={CHAR_LIMITS.copyright}
+          placeholder={`© ${new Date().getFullYear()} ${content.hero.name}. All rights reserved.`}
+          onChange={(copyrightText) => commit({ copyrightText: copyrightText || undefined })}
         />
-        {custom && names.length === 0 && (
-          <p className="text-xs text-warning">The list is empty, so the banner is hidden.</p>
-        )}
-        {custom && (
-          <button
-            type="button"
-            onClick={() => commit({ marquee: undefined })}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors duration-200 hover:text-ink"
-          >
-            <RotateCcw className="h-4 w-4" strokeWidth={2} />
-            Follow Experience again
-            {derived.length > 0 ? ` (${derived.join(", ")})` : ""}
-          </button>
-        )}
       </section>
     </div>
   );
@@ -1002,6 +1439,17 @@ export function SeoForm({
             hint="Starts with 'G-'. When provided, GA4 tracking scripts are automatically injected into the page."
             onChange={(gaMeasurementId) =>
               commit({ gaMeasurementId: gaMeasurementId || undefined })
+            }
+          />
+
+          <TextField
+            label="Microsoft Clarity Project ID"
+            value={seo.clarityProjectId ?? ""}
+            max={CHAR_LIMITS.seo.clarityProjectId}
+            placeholder="e.g. abc123xyz"
+            hint="Starts with letters/numbers from your Clarity dashboard. Enables heatmaps and session recordings on your live portfolio."
+            onChange={(clarityProjectId) =>
+              commit({ clarityProjectId: clarityProjectId?.trim() || undefined })
             }
           />
         </div>

@@ -11,14 +11,14 @@ import { GhostTitle } from "./GhostTitle";
  * numbered rows with the credential on the left and the badge or link on
  * the right. Rows only become links when a credential URL exists.
  */
-export function CertificationsSection({ items }: { items: CertificationItem[] }) {
+export function CertificationsSection({ items, title }: { items: CertificationItem[]; title?: string }) {
   return (
     <section
       id="certifications"
       className="relative scroll-mt-24 overflow-hidden bg-transparent px-4 pb-16 pt-6 sm:px-6 md:px-10 md:pb-20 md:pt-10"
     >
       <GridLines />
-      <GhostTitle>Certifications</GhostTitle>
+      <GhostTitle>{title || "Certifications"}</GhostTitle>
       <div className="relative z-[2] mx-auto mt-2 max-w-[1100px] overflow-hidden rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl md:mt-6">
         {items.map((c, i) => {
           const meta = [

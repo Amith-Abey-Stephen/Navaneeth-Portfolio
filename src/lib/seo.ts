@@ -29,6 +29,7 @@ export type EffectiveSeo = {
   googleVerification?: string;
   bingVerification?: string;
   gaMeasurementId?: string;
+  clarityProjectId?: string;
   geoRegion: string;
   geoPlacename: string;
   geoPosition: string;
@@ -85,6 +86,7 @@ export function getEffectiveSeo(content: SiteContent): EffectiveSeo {
     googleVerification: custom?.googleVerification?.trim() || undefined,
     bingVerification: custom?.bingVerification?.trim() || undefined,
     gaMeasurementId: custom?.gaMeasurementId?.trim() || undefined,
+    clarityProjectId: custom?.clarityProjectId?.trim() || undefined,
     geoRegion,
     geoPlacename,
     geoPosition: DEFAULT_GEO_POSITION,

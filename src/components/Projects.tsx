@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, useInView, useScroll, useTransform } from "motion/react";
-import { ArrowUpRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useInView, useScroll, useTransform } from "motion/react";
+import { ArrowUpRight, ChevronDown, ChevronUp } from "lucide-react";
 import type { ProjectItem, ProjectVertical } from "@/lib/types";
 import { PROJECT_VERTICALS } from "@/lib/types";
 import { pad2 } from "@/lib/format";
@@ -10,11 +10,9 @@ import { GridLines, useIsMobile, useReveal } from "./ui";
 
 function LaptopMock({
   p,
-  href,
   onHoverChange,
 }: {
   p: ProjectItem;
-  href?: string;
   onHoverChange: (v: boolean) => void;
 }) {
   const [loaded, setLoaded] = useState(false);
@@ -32,14 +30,20 @@ function LaptopMock({
             alt=""
             loading="lazy"
             onLoad={() => setLoaded(true)}
-            className={`h-full w-full object-cover object-top transition-all duration-700 ease-out group-hover:scale-[1.12] ${
+            className={`h-full w-full object-cover object-top transition-all duration-700 ease-out group-hover:scale-[1.08] ${
               loaded ? "opacity-100 blur-0" : "scale-[1.02] opacity-0 blur-md"
             }`}
           />
+          {/* Subtle bottom gradient behind the title — only over the lower half, never darkening the whole image */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-black/95 via-black/55 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 z-10 p-3.5 sm:p-4 md:p-5">
+            <p className="line-clamp-2 font-heading text-[15px] font-bold leading-snug tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-[17px] md:text-[18px]">
+              {p.title}
+            </p>
+          </div>
         </>
       ) : (
-        /* no cover yet — the screen carries the title as a text mock, like
-           the reference laptops do, so the card never shows a broken image */
+        /* no cover yet — text mock screen */
         <div className="flex h-full w-full flex-col justify-end bg-[radial-gradient(120%_90%_at_20%_0%,rgba(255,74,26,0.28),transparent_60%),linear-gradient(160deg,#1a1a1f,#0b0b0e)] p-5 transition-transform duration-700 ease-out group-hover:scale-[1.04] sm:p-6 lg:p-7">
           <p className="font-heading text-[11px] uppercase tracking-[0.18em] text-white/45">{p.vertical}</p>
           <p className="mt-2 line-clamp-3 font-heading text-[clamp(18px,3.4vw,26px)] font-semibold leading-[1.15] text-white/90 md:text-[21px] lg:text-[26px]">
@@ -47,7 +51,7 @@ function LaptopMock({
           </p>
         </div>
       )}
-      {/* subtle hover shade so the preview pill pops */}
+      {/* subtle hover shade */}
       <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
     </div>
   );
@@ -58,7 +62,7 @@ function LaptopMock({
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
     >
-      {/* studio glow — dark card backdrop like the recording */}
+      {/* studio glow — dark card backdrop */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_70%_at_50%_0%,rgba(255,255,255,0.09),transparent_70%)]" />
       <div className="pointer-events-none absolute inset-x-8 bottom-0 h-24 bg-black/60 blur-2xl" />
 
@@ -70,13 +74,7 @@ function LaptopMock({
       {/* laptop */}
       <div className="relative">
         <div className="relative overflow-hidden rounded-t-xl border border-white/10 border-b-0 bg-black shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)]">
-          {href ? (
-            <a href={href} target="_blank" rel="noreferrer" tabIndex={-1} aria-hidden className="block">
-              {screen}
-            </a>
-          ) : (
-            screen
-          )}
+          {screen}
         </div>
         {/* laptop base */}
         <div className="relative mx-auto h-[10px] w-[96%] rounded-b-xl bg-gradient-to-b from-[#2b2b30] to-[#101012]" />
@@ -88,24 +86,32 @@ function LaptopMock({
   );
 }
 
-function ProjectCard({ p, index }: { p: ProjectItem; index: number }) {
+function ProjectCard({
+  p,
+  index,
+  isExpanded,
+  onToggleExpand,
+}: {
+  p: ProjectItem;
+  index: number;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+}) {
   const [previewHover, setPreviewHover] = useState(false);
-  const [btnHover, setBtnHover] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const r = useReveal();
   const mobile = useIsMobile();
-  // Cards sit in one column on phones, so the two-column stagger only applies from md.
   const row = Math.floor(index / 2);
   const delay = mobile ? 0 : (index % 2) * 0.12 + row * 0.06;
   const hidden = { opacity: 0, y: r.yBody + 16, scale: 0.96, filter: mobile ? "blur(6px)" : "blur(8px)" };
 
-  // One primary action: the live product when it exists, else the case study.
+  // Action links
   const primary = p.liveUrl
-    ? { href: p.liveUrl, label: "View Project", tip: "Visit Live Project" }
+    ? { href: p.liveUrl, label: "View Project" }
     : p.caseStudyUrl
-      ? { href: p.caseStudyUrl, label: "Read Case Study", tip: "Open Case Study" }
+      ? { href: p.caseStudyUrl, label: "Read Case Study" }
       : null;
   const secondaryCaseStudy = p.liveUrl && p.caseStudyUrl ? p.caseStudyUrl : null;
   const tags = (p.tags ?? []).filter((t) => t.trim());
@@ -119,146 +125,211 @@ function ProjectCard({ p, index }: { p: ProjectItem; index: number }) {
       className="min-w-0"
     >
       <article
-        className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#141414] transition-all duration-500 hover:-translate-y-1 hover:border-white/25 hover:shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)] focus-within:border-white/25"
+        data-project-card
+        className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)] focus-within:border-white/25 ${
+          isExpanded
+            ? "border-white/30 bg-[#161616]"
+            : "cursor-pointer border-white/10 bg-[#141414] hover:border-white/25"
+        }`}
+        onClick={() => {
+          if (!isExpanded) onToggleExpand();
+        }}
         onMouseLeave={() => {
           setPreviewHover(false);
-          setBtnHover(false);
         }}
         onMouseMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect();
-          setPos({ x: e.clientX - r.left, y: e.clientY - r.top });
+          const rect = e.currentTarget.getBoundingClientRect();
+          setPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
         }}
       >
-        {/* cursor-following preview pill — image zone only, hidden while
-            the button tooltip is active. Only shown when there is somewhere
-            to go. Centered above the cursor so it never clips at card edges. */}
-        {primary && (
+        {/* desktop cursor-following cue: Click to Expand */}
+        {!isExpanded && (
           <motion.div
             aria-hidden
             animate={{
-              opacity: previewHover && !btnHover ? 1 : 0,
-              scale: previewHover && !btnHover ? 1 : 0.85,
+              opacity: previewHover ? 1 : 0,
+              scale: previewHover ? 1 : 0.85,
             }}
-            transition={{ duration: 0.22 }}
+            transition={{ duration: 0.2 }}
             className="pointer-events-none absolute z-20 hidden -translate-x-1/2 -translate-y-[160%] whitespace-nowrap rounded-full bg-black/85 px-4 py-2 text-[13px] font-medium text-white shadow-xl backdrop-blur-md md:block"
             style={{ left: pos.x, top: pos.y }}
           >
-            Click to Preview
+            Click to Expand
           </motion.div>
         )}
 
-        <LaptopMock p={p} href={primary?.href} onHoverChange={setPreviewHover} />
+        {/* Laptop mock with project cover image & title over image */}
+        <LaptopMock p={p} onHoverChange={setPreviewHover} />
 
-        <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[#181818] px-4 py-4 sm:px-5 md:px-6">
-          <div className="min-w-0 flex-1">
-            <h4 className="line-clamp-2 font-heading text-[17px] font-semibold leading-snug text-white sm:text-[18px] md:text-[20px]">
-              {p.title}
-            </h4>
-            <p className="truncate font-heading text-[13px] text-white/50">{p.vertical}</p>
-          </div>
-          {primary && (
-            <a
-              href={primary.href}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`${primary.label}: ${p.title}`}
-              className="group/btn relative inline-flex min-h-[44px] shrink-0 items-center gap-1.5 overflow-visible rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-2.5 font-heading text-[13px] font-medium text-white transition-all duration-300 group-hover:border-white/35 group-hover:bg-white/[0.10] group-hover:shadow-[0_0_20px_-4px_rgba(255,255,255,0.25)] active:bg-white/[0.14] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-4 sm:text-[14px]"
-              onMouseEnter={() => setBtnHover(true)}
-              onMouseLeave={() => setBtnHover(false)}
+        {/* Compact bottom bar for the collapsed card */}
+        {!isExpanded && (
+          <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[#181818] px-4 py-3 sm:px-5">
+            <span className="truncate font-heading text-[12px] font-medium tracking-wide text-white/55 sm:text-[13px]">
+              {p.vertical}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleExpand();
+              }}
+              aria-label={`Expand ${p.title}`}
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1 font-heading text-[12px] font-medium text-white/85 transition-colors duration-200 group-hover:border-white/30 group-hover:bg-white/10 group-hover:text-white"
             >
-              {primary.label}
-              {/* arrow swap — fires on card hover too (group-hover), not
-                  just direct button hover: old slides out up-right, new
-                  slides in from bottom-left */}
-              <span className="relative grid size-[17px] place-items-center overflow-hidden" aria-hidden>
-                <ArrowUpRight
-                  size={17}
-                  className="absolute transition-all duration-300 ease-out group-hover:-translate-y-4 group-hover:translate-x-4 group-hover:opacity-0"
-                />
-                <ArrowUpRight
-                  size={17}
-                  className="absolute translate-y-4 -translate-x-4 opacity-0 transition-all duration-300 ease-out group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
-                />
-              </span>
-              {/* tooltip — sits ABOVE the button (inside the card's
-                  overflow bounds) so it is never clipped */}
-              <motion.span
-                aria-hidden
-                animate={{ opacity: btnHover ? 1 : 0, y: btnHover ? 0 : 6 }}
-                transition={{ duration: 0.2 }}
-                className="pointer-events-none absolute bottom-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/90 px-3.5 py-1.5 text-[12px] font-medium text-white shadow-xl backdrop-blur-md"
-              >
-                {primary.tip}
-              </motion.span>
-            </a>
-          )}
-        </div>
+              <span>Expand</span>
+              <ChevronDown size={14} className="transition-transform duration-300 group-hover:translate-y-0.5" />
+            </button>
+          </div>
+        )}
 
-        {/* story — overview, outcome, tags; the card body the PM portfolio needs */}
-        <div className="flex flex-1 flex-col gap-4 border-t border-white/10 bg-[#141414] px-4 py-5 sm:px-5 md:px-6 md:py-6">
-          <p className="line-clamp-[9] break-words font-heading text-[14px] font-light leading-[1.7] text-white/70 sm:text-[15px] md:text-[16px]">
-            {p.overview}
-          </p>
-          {p.resultsAndImpact && (
-            <div>
-              <p className="font-heading text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
-                Results &amp; impact
-              </p>
-              <p className="mt-2 line-clamp-[9] break-words font-heading text-[14px] font-light leading-[1.7] text-white/85 sm:text-[15px] md:text-[16px]">
-                {p.resultsAndImpact}
-              </p>
-            </div>
+        {/* Expanded detail drawer */}
+        <AnimatePresence initial={false}>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden border-t border-white/10"
+            >
+              {/* Header with Title, Vertical and Actions */}
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-[#181818] px-4 py-3.5 sm:px-5 md:px-6">
+                <div className="min-w-0 flex-1">
+                  <h4 className="line-clamp-2 font-heading text-[17px] font-semibold leading-snug text-white sm:text-[18px] md:text-[20px]">
+                    {p.title}
+                  </h4>
+                  <p className="truncate font-heading text-[13px] text-white/50">{p.vertical}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {primary && (
+                    <a
+                      href={primary.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`${primary.label}: ${p.title}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="group/btn relative inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.06] px-3.5 py-2 font-heading text-[13px] font-medium text-white transition-all duration-300 hover:border-white/35 hover:bg-white/[0.12] active:bg-white/[0.16] sm:text-[14px]"
+                    >
+                      {primary.label}
+                      <ArrowUpRight size={15} />
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleExpand();
+                    }}
+                    aria-label="Collapse details"
+                    className="inline-flex min-h-[40px] items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 font-heading text-[12px] font-medium text-white/70 transition-colors hover:border-white/20 hover:text-white"
+                  >
+                    <span>Close</span>
+                    <ChevronUp size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Story content: overview, results/impact, tags */}
+              <div className="flex flex-col gap-4 bg-[#141414] px-4 py-5 sm:px-5 md:px-6 md:py-6">
+                {p.overview && (
+                  <p className="break-words font-heading text-[14px] font-light leading-[1.7] text-white/70 sm:text-[15px] md:text-[16px]">
+                    {p.overview}
+                  </p>
+                )}
+                {p.resultsAndImpact && (
+                  <div>
+                    <p className="font-heading text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                      Results &amp; impact
+                    </p>
+                    <p className="mt-2 break-words font-heading text-[14px] font-light leading-[1.7] text-white/85 sm:text-[15px] md:text-[16px]">
+                      {p.resultsAndImpact}
+                    </p>
+                  </div>
+                )}
+                {(tags.length > 0 || secondaryCaseStudy) && (
+                  <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-2">
+                    {tags.length > 0 && (
+                      <p className="flex min-w-0 flex-wrap gap-x-2 gap-y-2 font-heading text-[13px] text-white/60 md:text-[14px]">
+                        {tags.map((t) => (
+                          <span key={t} className="break-words border-l border-white/25 pl-3 first:border-l-0 first:pl-0">
+                            # {t}
+                          </span>
+                        ))}
+                      </p>
+                    )}
+                    {secondaryCaseStudy && (
+                      <a
+                        href={secondaryCaseStudy}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="-my-2 inline-flex min-h-[40px] items-center gap-1 rounded font-heading text-[13px] font-medium text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white active:text-white md:text-[14px]"
+                      >
+                        Read case study <ArrowUpRight size={14} aria-hidden />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
           )}
-          {(tags.length > 0 || secondaryCaseStudy) && (
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-1">
-              {tags.length > 0 && (
-                <p className="flex min-w-0 flex-wrap gap-x-2 gap-y-2 font-heading text-[13px] text-white/60 md:text-[14px]">
-                  {tags.map((t) => (
-                    <span key={t} className="break-words border-l border-white/25 pl-3 first:border-l-0 first:pl-0">
-                      # {t}
-                    </span>
-                  ))}
-                </p>
-              )}
-              {secondaryCaseStudy && (
-                <a
-                  href={secondaryCaseStudy}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="-my-3 inline-flex min-h-[44px] items-center gap-1 rounded font-heading text-[13px] font-medium text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white active:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white md:text-[14px]"
-                >
-                  Read case study <ArrowUpRight size={14} aria-hidden />
-                </a>
-              )}
-            </div>
-          )}
-        </div>
+        </AnimatePresence>
       </article>
     </motion.div>
   );
 }
 
 /**
- * Projects, grouped by vertical. Each vertical is a titled run of the same
- * laptop-mock cards; verticals with no projects don't render at all — the
- * schema's five verticals stay manageable in the studio regardless.
+ * Projects, grouped by vertical.
+ * Supports custom categories registry and single-item expansion interaction.
  */
-export function Projects({ items }: { items: ProjectItem[] }) {
+export function Projects({
+  items,
+  title,
+  categories,
+}: {
+  items: ProjectItem[];
+  title?: string;
+  categories?: string[];
+}) {
   const ref = useRef<HTMLElement>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const { scrollYProgress } = useScroll({
     target: ref as never,
     offset: ["start end", "end start"],
   });
-  // ghost title drifts slower than the cards — parallax like the recording
+  // ghost title drifts slower than the cards
   const ghostY = useTransform(scrollYProgress, [0, 1], [80, -80]);
   const ghostOpacity = useTransform(scrollYProgress, [0, 0.35, 0.8, 1], [0, 1, 1, 0.4]);
 
-  // Non-empty verticals in the schema's order, each with the running card
-  // offset so the entrance stagger continues across groups.
-  const groups = PROJECT_VERTICALS.map((v) => ({
-    vertical: v as ProjectVertical,
-    items: items.filter((p) => p.vertical === v),
-  }))
+  // Click outside listener: collapse expanded card when clicking outside any project card
+  useEffect(() => {
+    if (!expandedId) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && !target.closest("[data-project-card]")) {
+        setExpandedId(null);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    document.addEventListener("touchend", handleOutsideClick);
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+      document.removeEventListener("touchend", handleOutsideClick);
+    };
+  }, [expandedId]);
+
+  // Derive categories order: predefined + configured custom + any present in items
+  const baseCategories = categories && categories.length > 0 ? categories : (PROJECT_VERTICALS as readonly string[]);
+  const allCategoryNames = Array.from(new Set([...baseCategories, ...items.map((p) => p.vertical)]));
+
+  // Non-empty verticals in order, with continuous index stagger
+  const groups = allCategoryNames
+    .map((v) => ({
+      vertical: v as ProjectVertical,
+      items: items.filter((p) => p.vertical === v),
+    }))
     .filter((g) => g.items.length > 0)
     .reduce<{ vertical: ProjectVertical; items: ProjectItem[]; start: number }[]>((acc, g) => {
       const prev = acc[acc.length - 1];
@@ -266,29 +337,29 @@ export function Projects({ items }: { items: ProjectItem[] }) {
       return [...acc, { ...g, start }];
     }, []);
 
+  const sectionHeading = title?.trim() || "Projects";
+
   return (
     <section
       id="projects"
       ref={ref}
       className="relative -mt-px scroll-mt-24 overflow-hidden bg-transparent px-4 pb-16 pt-10 sm:px-6 md:px-10 md:pb-20 md:pt-16"
     >
-      {/* the cards' black stage — feathered top and bottom so it melts into
-          whatever the shared canvas is doing on either side */}
+      {/* black stage feathered top and bottom */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,#0a0a0c_10%,#0a0a0c_90%,transparent_100%)]"
       />
       <GridLines />
-      <h2 className="sr-only">Projects</h2>
+      <h2 className="sr-only">{sectionHeading}</h2>
       <motion.span
         aria-hidden
         style={{ y: ghostY, opacity: ghostOpacity }}
         className="ghost-huge pointer-events-none absolute -top-4 left-0 z-[2] text-[27vw] md:text-[15vw]"
       >
-        Projects
+        {sectionHeading}
       </motion.span>
-      {/* z-2 keeps the cards above the journey line; the narrower column is the
-          V3 "moderately smaller cards" — the card itself is untouched */}
+
       <div className="relative z-[2] mx-auto max-w-[1160px] pt-[13vw] md:pt-[7.5vw]">
         {groups.map((g, gi) => {
           return (
@@ -306,7 +377,13 @@ export function Projects({ items }: { items: ProjectItem[] }) {
               </div>
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                 {g.items.map((p, i) => (
-                  <ProjectCard key={p.id} p={p} index={g.start + i} />
+                  <ProjectCard
+                    key={p.id}
+                    p={p}
+                    index={g.start + i}
+                    isExpanded={expandedId === p.id}
+                    onToggleExpand={() => setExpandedId((prev) => (prev === p.id ? null : p.id))}
+                  />
                 ))}
               </div>
             </div>
