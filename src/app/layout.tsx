@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 // One family for the whole product — the public site and the content studio.
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+// Self-hosted (Plus Jakarta Sans, SIL Open Font License): one variable file covering
+// weights 300–800, so the site never depends on Google Fonts at build or run time.
+const jakarta = localFont({
+  src: "./fonts/PlusJakartaSans-latin.woff2",
   variable: "--font-jakarta-next",
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: "300 800",
   display: "swap",
 });
 
@@ -35,8 +37,6 @@ export default function RootLayout({
       className={jakarta.variable}
     >
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://sbrcekbvqlcgsgmhzgfk.supabase.co" />
         <link rel="dns-prefetch" href="https://sbrcekbvqlcgsgmhzgfk.supabase.co" />
         <link rel="author" href="/humans.txt" />
